@@ -1,7 +1,5 @@
 import 'package:diaria/Components/button.dart';
 import 'package:diaria/Components/colors.dart';
-import 'package:diaria/Views/profile.dart';
-import 'package:diaria/Views/signup.dart';
 import 'package:flutter/material.dart';
 import '../Components/textfield.dart';
 import '../SQLite/database_helper.dart';
