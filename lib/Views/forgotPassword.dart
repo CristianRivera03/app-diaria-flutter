@@ -1,42 +1,44 @@
-import 'package:diaria/Components/button.dart';
-import 'package:diaria/Components/colors.dart';
+import 'package:diaria/Views/verifyCode.dart';
 import 'package:flutter/material.dart';
+import '../Components/button.dart';
+import '../Components/colors.dart';
 import '../Components/textfield.dart';
-import '../SQLite/database_helper.dart';
+import '../Services/email_services.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
 
   @override
-  State<ForgotPasswordScreen> createState() => _ForgotPsswdScreen();
+  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
 }
 
-class _ForgotPsswdScreen extends State<ForgotPasswordScreen> {
+class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _newPasswordController = TextEditingController();
 
-  // Método para manejar el reseteo de contraseña
-  Future<void> resetPassword() async {
+  Future<void> sendVerificationCode() async {
     String email = _emailController.text.trim();
-    String newPassword = _newPasswordController.text.trim();
 
-    if (email.isEmpty || newPassword.isEmpty) {
+    if (email.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Por favor completa todos los campos')),
+        SnackBar(content: Text('Por favor, introduce un correo electrónico')),
       );
       return;
     }
 
-    bool success = await DatabaseHelper().resetPassword(email, newPassword);
+    try {
+      // Generar y enviar el código
+      final emailService = EmailService();
+      await emailService.sendVerificationCode(email);
 
-    String message = success
-        ? 'Contraseña restablecida exitosamente. Intenta iniciar sesión.'
-        : 'Correo electrónico no encontrado.';
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
-
-    if (success) {
-      // Navegar de regreso a la pantalla de inicio de sesión, si es necesario
-      Navigator.pop(context);
+      // Redirigir al usuario a la pantalla de verificación de código
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => VerifyCodeScreen(email: email)),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al enviar el correo: $e')),
+      );
     }
   }
 
@@ -45,7 +47,7 @@ class _ForgotPsswdScreen extends State<ForgotPasswordScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Recuperar Contraseña'),
-        backgroundColor: Colors.white, // Color desde el archivo colors.dart
+        backgroundColor: primaryColor,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -60,26 +62,19 @@ class _ForgotPsswdScreen extends State<ForgotPasswordScreen> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            Image.asset("assets/imgDos.png"), // Usa el mismo recurso que en Login
+            SizedBox(height: 20),
             InputField(
               hint: "Correo Electrónico",
               icon: Icons.email,
               controller: _emailController,
             ),
-            InputField(
-              hint: "Nueva Contraseña",
-              icon: Icons.lock,
-              controller: _newPasswordController,
-              passwordInvisible: true,
-            ),
+            SizedBox(height: 20),
             Button(
-              label: "Restablecer Contraseña",
-              press: () => resetPassword(),
+              label: "Enviar Código",
+              press: sendVerificationCode,
             ),
             TextButton(
-              onPressed: () {
-                Navigator.pop(context); // Volver al Login
-              },
+              onPressed: () => Navigator.pop(context),
               child: Text(
                 "Cancelar",
                 style: TextStyle(
