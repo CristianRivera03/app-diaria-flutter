@@ -14,7 +14,6 @@ class SignUpScreen extends StatefulWidget {
 }
 
 class _SignUpScreenState extends State<SignUpScreen> {
-  // Controladores para los campos de texto
   final fullName = TextEditingController();
   final email = TextEditingController();
   final usrName = TextEditingController();
@@ -22,8 +21,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final confirmPassword = TextEditingController();
   final db = DatabaseHelper();
 
-  // Función para registrar el usuario
-  signUp() async {
+  Future<void> signUp() async {
+    if (fullName.text.isEmpty || email.text.isEmpty || usrName.text.isEmpty || password.text.isEmpty || confirmPassword.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Por favor, completa todos los campos.')),
+      );
+      return;
+    }
+
+    if (password.text != confirmPassword.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Las contraseñas no coinciden.')),
+      );
+      return;
+    }
+
     var result = await db.createUser(
       Users(
         fullName: fullName.text,
@@ -32,11 +44,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
         usrPassword: password.text,
       ),
     );
+
     if (result > 0) {
-      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Usuario registrado exitosamente.')),
+      );
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const LoginScreen()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Hubo un problema al registrar el usuario.')),
       );
     }
   }
@@ -63,63 +82,30 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                InputField(
-                  hint: "Nombre completo",
-                  icon: Icons.person,
-                  controller: fullName,
-                ),
-                InputField(
-                  hint: "Email",
-                  icon: Icons.email,
-                  controller: email,
-                ),
-                InputField(
-                  hint: "Nombre de usuario",
-                  icon: Icons.account_circle,
-                  controller: usrName,
-                ),
-                InputField(
-                  hint: "Contraseña",
-                  icon: Icons.lock,
-                  controller: password,
-                  passwordInvisible: true,
-                ),
-                InputField(
-                  hint: "Ingresa contraseña de nuevo",
-                  icon: Icons.lock,
-                  controller: confirmPassword,
-                  passwordInvisible: true,
-                ),
+                InputField(hint: "Nombre completo", icon: Icons.person, controller: fullName),
+                InputField(hint: "Email", icon: Icons.email, controller: email),
+                InputField(hint: "Nombre de usuario", icon: Icons.account_circle, controller: usrName),
+                InputField(hint: "Contraseña", icon: Icons.lock, controller: password, passwordInvisible: true),
+                InputField(hint: "Ingresa contraseña de nuevo", icon: Icons.lock, controller: confirmPassword, passwordInvisible: true),
                 const SizedBox(height: 10),
                 Button(
                   label: "Registrar",
-                  press: () {
-                    signUp();
-                  },
+                  press: () => signUp(),
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
-                      "Ya tienes una cuenta?",
-                      style: TextStyle(color: primaryColor, fontSize: 15),
-                    ),
+                    const Text("¿Ya tienes una cuenta?", style: TextStyle(color: primaryColor, fontSize: 15)),
                     TextButton(
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(
-                            builder: (context) => const LoginScreen(),
-                          ),
+                          MaterialPageRoute(builder: (context) => const LoginScreen()),
                         );
                       },
                       child: Text(
                         "Iniciar sesión",
-                        style: TextStyle(
-                          color: primaryColor,
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: TextStyle(color: primaryColor, fontSize: 15, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ],
