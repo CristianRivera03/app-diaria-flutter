@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
-
 import '../Components/button.dart';
 import '../Components/colors.dart';
 import '../JSON/users.dart';
 import 'auth.dart';
+import 'changePassword.dart';
+import 'user_screen_list.dart';
 
 class Profile extends StatelessWidget {
   final Users? profile;
+
   const Profile({super.key, this.profile});
 
   @override
   Widget build(BuildContext context) {
-    return  Scaffold(
+    return Scaffold(
       body: SingleChildScrollView(
         child: SafeArea(
           child: Padding(
@@ -27,38 +29,59 @@ class Profile extends StatelessWidget {
                     radius: 75,
                   ),
                 ),
-
                 SizedBox(height: 10),
-                Text("Bienvenido ${profile?.fullName}", style: TextStyle(color: primaryColor, fontSize: 30, fontWeight: FontWeight.bold),),
-                Text("${profile?.email}", style: TextStyle(color: Colors.black45, fontSize: 15, fontWeight: FontWeight.bold),),
-
+                Text(
+                  "Bienvenido ${profile?.fullName}",
+                  style: TextStyle(color: primaryColor, fontSize: 30, fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  "${profile?.email}",
+                  style: TextStyle(color: Colors.black45, fontSize: 15, fontWeight: FontWeight.bold),
+                ),
                 Button(label: "Logout", press: () {
                   Navigator.push(context, MaterialPageRoute(builder: (context) => const AuthScreen()));
                 }),
-
-                // Informacion del usuario
                 ListTile(
-                  leading: Icon(Icons.person, color: primaryColor, size: 30,),
+                  leading: Icon(Icons.person, color: primaryColor, size: 30),
                   subtitle: Text("Nombre completo"),
                   title: Text("${profile?.fullName}"),
                 ),
-
-                // Informacion del usuario correo
-                 ListTile(
-                  leading: Icon(Icons.account_circle, color: primaryColor, size: 30,),
+                ListTile(
+                  leading: Icon(Icons.account_circle, color: primaryColor, size: 30),
                   subtitle: Text("Usuario"),
                   title: Text("${profile?.usrName}"),
                 ),
-
-
-                // Informacion del usuario correo
                 ListTile(
-                  leading: Icon(Icons.email, color: primaryColor, size: 30,),
-                  subtitle: Text("Correo electronico"),
+                  leading: Icon(Icons.lock, color: primaryColor, size: 30),
+                  subtitle: Text("Seguridad"),
+                  title: Text("Cambiar Contraseña"),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChangePasswordScreen(profile: profile!),
+                      ),
+                    );
+                  },
+                ),
+                ListTile(
+                  leading: Icon(Icons.email, color: primaryColor, size: 30),
+                  subtitle: Text("Correo electrónico"),
                   title: Text("${profile?.email}"),
                 ),
-
-
+                ListTile(
+                  leading: Icon(Icons.list, color: primaryColor, size: 30),
+                  subtitle: Text("Gestionar usuarios"),
+                  title: Text("Lista de Usuarios"),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => UserListScreen(currentUserName: profile?.usrName ?? ""),
+                      ),
+                    );
+                  },
+                ),
               ],
             ),
           ),
