@@ -3,6 +3,7 @@ import '../Components/button.dart';
 import '../Components/colors.dart';
 import '../JSON/users.dart';
 import 'auth.dart';
+import 'changePassword.dart';
 import 'user_screen_list.dart';
 
 class Profile extends StatelessWidget {
@@ -49,6 +50,19 @@ class Profile extends StatelessWidget {
                   leading: Icon(Icons.account_circle, color: primaryColor, size: 30),
                   subtitle: Text("Usuario"),
                   title: Text("${profile?.usrName}"),
+                ),
+                ListTile(
+                  leading: Icon(Icons.lock, color: primaryColor, size: 30),
+                  subtitle: Text("Seguridad"),
+                  title: Text("Cambiar Contraseña"),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChangePasswordScreen(profile: profile!),
+                      ),
+                    );
+                  },
                 ),
                 ListTile(
                   leading: Icon(Icons.email, color: primaryColor, size: 30),

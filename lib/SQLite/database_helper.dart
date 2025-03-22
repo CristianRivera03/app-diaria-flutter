@@ -102,4 +102,66 @@ class DatabaseHelper {
     );
     return result.isNotEmpty;
   }
+  //Restablecer y cambiar contraseña
+  Future<bool> resetPassword(String email, String newPassword) async {
+    try {
+      final Database db = await initDB();
+      // Verifica si el correo existe
+      final user = await db.query(
+        "users",
+        where: "email = ?",
+        whereArgs: [email],
+      );
+
+      if (user.isNotEmpty) {
+        // Actualiza la contraseña
+        await db.update(
+          "users",
+          {"usrPassword": newPassword},
+          where: "email = ?",
+          whereArgs: [email],
+        );
+        return true;
+      } else {
+        // Correo no encontrado
+        return false;
+      }
+    } catch (e) {
+      print("Error al restablecer la contraseña: $e");
+      return false;
+    }
+  }
+
+  Future<bool> changePassword(String usrName, String currentPassword, String newPassword) async {
+    try {
+      final Database db = await initDB();
+
+      // Verificar que el usuario exista y la contraseña actual sea correcta
+      final List<Map<String, dynamic>> userQuery = await db.query(
+        "users",
+        where: "usrName = ? AND usrPassword = ?",
+        whereArgs: [usrName, currentPassword],
+      );
+
+      if (userQuery.isNotEmpty) {
+        // Actualizar la contraseña
+        final int rowsAffected = await db.update(
+          "users",
+          {"usrPassword": newPassword},
+          where: "usrName = ?",
+          whereArgs: [usrName],
+        );
+
+        if (rowsAffected > 0) {
+          return true; // Contraseña actualizada exitosamente
+        }
+      }
+
+      // Retorna false si no se encontró el usuario o si la contraseña actual es incorrecta
+      return false;
+    } catch (e) {
+      print("Error al cambiar la contraseña: $e");
+      return false;
+    }
+  }
 }

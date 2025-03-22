@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../Components/textfield.dart';
 import '../JSON/users.dart';
 import '../SQLite/database_helper.dart';
+import 'forgotPassword.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -81,6 +82,20 @@ class _LoginScreenState extends State<LoginScreen> {
                       });
                     },
                   ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()));
+                      },
+                      child: Text(
+                        "Olvide mi contraseña",
+                        style: TextStyle(color: primaryColor, fontSize: 15, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
                 ),
                 Button(label: "Iniciar Sesión", press: () => login()),
                 Row(
