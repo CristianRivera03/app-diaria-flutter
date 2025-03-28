@@ -70,7 +70,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Image.asset("assets/imgDos.png"),
                 InputField(hint: "Usuario", icon: Icons.person, controller: usrName),
                 InputField(hint: "Contraseña", icon: Icons.lock, controller: password, passwordInvisible: true),
-                ListTile(
+                /*ListTile(
                   horizontalTitleGap: 2,
                   title: const Text("Recuérdame"),
                   leading: Checkbox(
@@ -82,7 +82,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       });
                     },
                   ),
-                ),
+                ),*/
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

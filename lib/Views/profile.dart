@@ -1,3 +1,4 @@
+import 'package:diaria/Views/help_view.dart';
 import 'package:flutter/material.dart';
 import '../Components/button.dart';
 import '../Components/colors.dart';
@@ -5,6 +6,7 @@ import '../JSON/users.dart';
 import 'auth.dart';
 import 'changePassword.dart';
 import 'user_screen_list.dart';
+import '../Components/navbar.dart';
 
 class Profile extends StatelessWidget {
   final Users? profile;
@@ -14,6 +16,16 @@ class Profile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: CustomAppBar(
+        title: "Gestión de Perfil",
+        onLeftTap: () {}, // Función vacía en lugar de null
+        onRightTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const HelpView()),
+          );
+        },
+      ),
       body: SingleChildScrollView(
         child: SafeArea(
           child: Padding(
@@ -32,15 +44,29 @@ class Profile extends StatelessWidget {
                 SizedBox(height: 10),
                 Text(
                   "Bienvenido ${profile?.fullName}",
-                  style: TextStyle(color: primaryColor, fontSize: 30, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: primaryColor,
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 Text(
                   "${profile?.email}",
-                  style: TextStyle(color: Colors.black45, fontSize: 15, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: Colors.black45,
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                Button(label: "Logout", press: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const AuthScreen()));
-                }),
+                Button(
+                  label: "Logout",
+                  press: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const AuthScreen()),
+                    );
+                  },
+                ),
                 ListTile(
                   leading: Icon(Icons.person, color: primaryColor, size: 30),
                   subtitle: Text("Nombre completo"),
