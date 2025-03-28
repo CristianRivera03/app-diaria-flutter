@@ -22,20 +22,30 @@ class DatabaseHelper {
   )
   ''';
 
+  final String verificationCodesTable = '''
+  CREATE TABLE verification_codes (
+    email TEXT PRIMARY KEY,
+    code TEXT,
+    created_at TEXT
+  )
+  ''';
+
+
   Future<Database> initDB() async {
     final databasePath = await getDatabasesPath();
     final path = join(databasePath, databaseName);
 
     return openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: (db, version) async {
         await db.execute(userTable);
         await db.execute(blockedUsersTable);
+        await db.execute(verificationCodesTable);
       },
       onUpgrade: (db, oldVersion, newVersion) async {
-        if (oldVersion < 2) {
-          await db.execute(blockedUsersTable);
+        if (oldVersion < 3) {
+          await db.execute(verificationCodesTable);
         }
       },
     );
@@ -101,5 +111,133 @@ class DatabaseHelper {
       whereArgs: [usrName],
     );
     return result.isNotEmpty;
+  }
+  //Restablecer y cambiar contraseña
+  Future<bool> resetPassword(String email, String newPassword) async {
+    try {
+      final Database db = await initDB();
+      // Verifica si el correo existe
+      final user = await db.query(
+        "users",
+        where: "email = ?",
+        whereArgs: [email],
+      );
+
+      if (user.isNotEmpty) {
+        // Actualiza la contraseña
+        await db.update(
+          "users",
+          {"usrPassword": newPassword},
+          where: "email = ?",
+          whereArgs: [email],
+        );
+        return true;
+      } else {
+        // Correo no encontrado
+        return false;
+      }
+    } catch (e) {
+      print("Error al restablecer la contraseña: $e");
+      return false;
+    }
+  }
+
+  Future<bool> changePassword(String usrName, String currentPassword, String newPassword) async {
+    try {
+      final Database db = await initDB();
+
+      // Verificar que el usuario exista y la contraseña actual sea correcta
+      final List<Map<String, dynamic>> userQuery = await db.query(
+        "users",
+        where: "usrName = ? AND usrPassword = ?",
+        whereArgs: [usrName, currentPassword],
+      );
+
+      if (userQuery.isNotEmpty) {
+        // Actualizar la contraseña
+        final int rowsAffected = await db.update(
+          "users",
+          {"usrPassword": newPassword},
+          where: "usrName = ?",
+          whereArgs: [usrName],
+        );
+
+        if (rowsAffected > 0) {
+          return true; // Contraseña actualizada exitosamente
+        }
+      }
+
+      // Retorna false si no se encontró el usuario o si la contraseña actual es incorrecta
+      return false;
+    } catch (e) {
+      print("Error al cambiar la contraseña: $e");
+      return false;
+    }
+  }
+
+  Future<bool> updatePassword(String email, String newPassword) async {
+    try {
+      final Database db = await initDB(); // Inicializa la base de datos
+      int rowsAffected = await db.update(
+        'users', // Nombre de la tabla
+        {'usrPassword': newPassword}, // Nuevo valor para la contraseña
+        where: 'email = ?', // Condición para encontrar el usuario
+        whereArgs: [email],
+      );
+
+      return rowsAffected > 0; // Retorna true si se actualizó al menos una fila
+    } catch (e) {
+      print('Error al actualizar la contraseña: $e');
+      return false; // Retorna false si hay un error
+    }
+  }
+
+  Future<String?> getVerificationCode(String email) async {
+    final Database db = await initDB();
+
+    final result = await db.query(
+      'verification_codes',
+      where: 'email = ?',
+      whereArgs: [email],
+    );
+
+    if (result.isNotEmpty) {
+      return result.first['code'] as String;
+    }
+    return null; // No se encontró un código para el correo
+  }
+
+  Future<void> storeVerificationCode(String email, String code) async {
+    final Database db = await initDB();
+
+    await db.insert(
+      'verification_codes',
+      {
+        'email': email,
+        'code': code,
+        'created_at': DateTime.now().toIso8601String(),
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<void> deleteVerificationCode(String email) async {
+    final Database db = await initDB();
+
+    await db.delete(
+      'verification_codes',
+      where: 'email = ?',
+      whereArgs: [email],
+    );
+  }
+
+  Future<bool> verifyCode(String email, String enteredCode) async {
+    final storedCode = await getVerificationCode(email);
+
+    if (storedCode != null && storedCode == enteredCode) {
+      await deleteVerificationCode(email); // Elimina el código después de verificar
+      return true; // Código válido
+    }
+    return false; // Código incorrecto
   }
 }

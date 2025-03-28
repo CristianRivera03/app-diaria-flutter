@@ -3,9 +3,11 @@ import 'package:diaria/Components/colors.dart';
 import 'package:diaria/Views/profile.dart';
 import 'package:diaria/Views/signup.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Importar SharedPreferences
 import '../Components/textfield.dart';
 import '../JSON/users.dart';
 import '../SQLite/database_helper.dart';
+import 'forgotPassword.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -17,10 +19,43 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final usrName = TextEditingController();
   final password = TextEditingController();
-  bool isChecked = false;
+  bool isChecked = false; // Estado del checkbox para "Recuérdame"
   bool isLoginError = false;
   bool isBlocked = false;
   final db = DatabaseHelper();
+
+  @override
+  void initState() {
+    super.initState();
+    loadUserData(); // Cargar el usuario y la contraseña guardados
+  }
+
+  // Guardar el usuario y la contraseña en SharedPreferences
+  Future<void> saveUserData(String username, String pass) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (isChecked) {
+      await prefs.setString('savedUsername', username); // Guardar el usuario
+      await prefs.setString('savedPassword', pass); // Guardar la contraseña
+    } else {
+      await prefs.remove('savedUsername'); // Eliminar el usuario guardado
+      await prefs.remove('savedPassword'); // Eliminar la contraseña guardada
+    }
+  }
+
+  // Cargar el usuario y la contraseña al abrir la pantalla
+  Future<void> loadUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? savedUsername = prefs.getString('savedUsername');
+    String? savedPassword = prefs.getString('savedPassword');
+
+    if (savedUsername != null && savedPassword != null) {
+      setState(() {
+        usrName.text = savedUsername; // Prellenar el campo de usuario
+        password.text = savedPassword; // Prellenar el campo de contraseña
+        isChecked = true; // Activar el checkbox
+      });
+    }
+  }
 
   Future<void> login() async {
     isBlocked = await db.isUserBlocked(usrName.text);
@@ -39,6 +74,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
 
     if (userAuthenticated) {
+      await saveUserData(usrName.text, password.text); // Guardar el usuario y la contraseña si se seleccionó "Recuérdame"
       Users? userDetails = await db.getUser(usrName.text);
       if (!mounted) return;
       Navigator.push(
@@ -77,12 +113,26 @@ class _LoginScreenState extends State<LoginScreen> {
                     value: isChecked,
                     onChanged: (value) {
                       setState(() {
-                        isChecked = value ?? false;
+                        isChecked = value ?? false; // Actualizar el checkbox
                       });
                     },
                   ),
                 ),
                 Button(label: "Iniciar Sesión", press: () => login()),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()));
+                      },
+                      child: Text(
+                        "Olvide mi contraseña",
+                        style: TextStyle(color: primaryColor, fontSize: 15, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
