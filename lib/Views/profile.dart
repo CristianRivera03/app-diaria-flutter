@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../Components/button.dart';
 import '../Components/colors.dart';
 import '../JSON/users.dart';
+import '../SQLite/database_helper.dart';
 import 'auth.dart';
 import 'changePassword.dart';
 import 'user_screen_list.dart';
@@ -82,11 +83,78 @@ class Profile extends StatelessWidget {
                     );
                   },
                 ),
+                SizedBox(height: 20), // Espaciado
+                Button(
+                  label: "Eliminar Cuenta",
+                  press: () => _showDeleteConfirmationDialog(context),
+                ),
               ],
             ),
           ),
         ),
       ),
     );
+  }
+
+  // Metodo para mostrar el cuadro de diálogo de confirmación
+  void _showDeleteConfirmationDialog(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+      return AlertDialog(
+          title: Text("Confirmar Eliminación"),
+          content: Text(
+            "¿Estás seguro de que quieres eliminar tu cuenta? Esta acción es irreversible y toda tu información será eliminada.",
+          ),
+          actions: [
+          TextButton(
+          onPressed: () {
+        Navigator.pop(context); // Cierra el cuadro de diálogo
+      },
+    child: Text("Cancelar", style: TextStyle(color: Colors.grey)),
+    ),
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(context); // Cierra el cuadro de diálogo primero
+                await _deleteUserAccount(context); // Luego procede con la eliminación
+              },
+              child: Text("Eliminar", style: TextStyle(color: Colors.red)),
+            ),
+          ],
+      );
+        },
+    );
+  }
+// Metodo para eliminar el usuario
+  Future<void> _deleteUserAccount(BuildContext context) async {
+    final db = DatabaseHelper();
+
+    try {
+      // Asegúrate de que el usuario esté disponible
+      final String currentUserEmail = profile!.email!;
+      bool success = await db.deleteUserAccount(currentUserEmail);
+
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Cuenta eliminada con éxito.")),
+        );
+
+        // Redirige al inicio de sesión
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const AuthScreen()),
+              (route) => false,
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error al eliminar la cuenta. Inténtalo de nuevo.")),
+        );
+      }
+    } catch (e) {
+      print("Error al eliminar la cuenta: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Ocurrió un error inesperado. Por favor, intenta más tarde.")),
+      );
+    }
   }
 }

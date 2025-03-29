@@ -63,7 +63,8 @@ class DatabaseHelper {
 
   Future<Users?> getUser(String usrName) async {
     final Database db = await initDB();
-    final res = await db.query("users", where: "usrName = ?", whereArgs: [usrName]);
+    final res = await db.query(
+        "users", where: "usrName = ?", whereArgs: [usrName]);
     return res.isNotEmpty ? Users.fromMap(res.first) : null;
   }
 
@@ -96,7 +97,8 @@ class DatabaseHelper {
   Future<int> unblockUser(String usrName) async {
     try {
       final Database db = await initDB();
-      return await db.delete("blocked_users", where: "usrName = ?", whereArgs: [usrName]);
+      return await db.delete(
+          "blocked_users", where: "usrName = ?", whereArgs: [usrName]);
     } catch (e) {
       print("Error al desbloquear usuario: $e");
       return -1;
@@ -112,6 +114,7 @@ class DatabaseHelper {
     );
     return result.isNotEmpty;
   }
+
   //Restablecer y cambiar contraseña
   Future<bool> resetPassword(String email, String newPassword) async {
     try {
@@ -142,7 +145,8 @@ class DatabaseHelper {
     }
   }
 
-  Future<bool> changePassword(String usrName, String currentPassword, String newPassword) async {
+  Future<bool> changePassword(String usrName, String currentPassword,
+      String newPassword) async {
     try {
       final Database db = await initDB();
 
@@ -235,9 +239,25 @@ class DatabaseHelper {
     final storedCode = await getVerificationCode(email);
 
     if (storedCode != null && storedCode == enteredCode) {
-      await deleteVerificationCode(email); // Elimina el código después de verificar
+      await deleteVerificationCode(
+          email); // Elimina el código después de verificar
       return true; // Código válido
     }
     return false; // Código incorrecto
+  }
+
+  Future<bool> deleteUserAccount(String email) async {
+    try {
+      final db = await initDB();
+      int rowsDeleted = await db.delete(
+        'users',
+        where: 'email = ?',
+        whereArgs: [email],
+      );
+      return rowsDeleted > 0; // Retorna true si se eliminó al menos un registro
+    } catch (e) {
+      print("Error al eliminar el usuario: $e");
+      return false;
+    }
   }
 }
