@@ -1,61 +1,50 @@
 import 'package:diaria/Views/help_view.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // Importar SharedPreferences
 import '../Components/button.dart';
 import '../Components/colors.dart';
 import '../JSON/users.dart';
 import 'auth.dart';
 import 'changePassword.dart';
 import 'user_screen_list.dart';
-import '../Components/navbar.dart';
+import 'theme_settings_page.dart';
 
-class Profile extends StatefulWidget {
+class Profile extends StatelessWidget {
   final Users? profile;
 
   const Profile({super.key, this.profile});
 
   @override
-  State<Profile> createState() => _ProfileState();
-}
-
-class _ProfileState extends State<Profile> {
-  bool isDarkMode = false; // Estado para el tema oscuro
-
-  @override
-  void initState() {
-    super.initState();
-    loadThemePreference(); // Cargar preferencia del tema al inicializar
-  }
-
-  // Cargar la preferencia del tema desde SharedPreferences
-  Future<void> loadThemePreference() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      isDarkMode = prefs.getBool('isDarkMode') ?? false;
-    });
-  }
-
-  // Guardar la preferencia del tema en SharedPreferences
-  Future<void> toggleTheme(bool value) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isDarkMode', value);
-    setState(() {
-      isDarkMode = value;
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      appBar: CustomAppBar(
-        title: "Gestión de Perfil",
-        onLeftTap: () {}, // Función vacía en lugar de null
-        onRightTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const HelpView()),
-          );
-        },
+      appBar: AppBar(
+        title: const Text("Gestión de Perfil"),
+        backgroundColor: theme.appBarTheme.backgroundColor,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.help_outline),
+            tooltip: "Ayuda",
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const HelpView()),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.color_lens_outlined),
+            tooltip: "Personalizar colores",
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ThemeSettingsPage(),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: SafeArea(
@@ -65,24 +54,24 @@ class _ProfileState extends State<Profile> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 CircleAvatar(
-                  backgroundColor: primaryColor,
+                  backgroundColor: theme.primaryColor,
                   radius: 77,
-                  child: CircleAvatar(
+                  child: const CircleAvatar(
                     backgroundImage: AssetImage("assets/no user.png"),
                     radius: 75,
                   ),
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  "Bienvenido ${widget.profile?.fullName}",
+                  "Bienvenido ${profile?.fullName}",
                   style: TextStyle(
-                    color: primaryColor,
+                    color: theme.primaryColor,
                     fontSize: 30,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
-                  "${widget.profile?.email}",
+                  "${profile?.email}",
                   style: const TextStyle(
                     color: Colors.black45,
                     fontSize: 15,
@@ -98,36 +87,37 @@ class _ProfileState extends State<Profile> {
                     );
                   },
                 ),
+
                 ListTile(
-                  leading: Icon(Icons.person, color: primaryColor, size: 30),
-                  subtitle: Text("Nombre completo"),
-                  title: Text("${widget.profile?.fullName}"),
+                  leading: Icon(Icons.person, color: theme.primaryColor, size: 30),
+                  subtitle: const Text("Nombre completo"),
+                  title: Text("${profile?.fullName}"),
                 ),
                 ListTile(
-                  leading: Icon(Icons.account_circle, color: primaryColor, size: 30),
-                  subtitle: Text("Usuario"),
-                  title: Text("${widget.profile?.usrName}"),
+                  leading: Icon(Icons.account_circle, color: theme.primaryColor, size: 30),
+                  subtitle: const Text("Usuario"),
+                  title: Text("${profile?.usrName}"),
                 ),
                 ListTile(
-                  leading: Icon(Icons.lock, color: primaryColor, size: 30),
-                  subtitle: Text("Seguridad"),
+                  leading: Icon(Icons.lock, color: theme.primaryColor, size: 30),
+                  subtitle: const Text("Seguridad"),
                   title: const Text("Cambiar Contraseña"),
                   onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ChangePasswordScreen(profile: widget.profile!),
+                        builder: (context) => ChangePasswordScreen(profile: profile!),
                       ),
                     );
                   },
                 ),
                 ListTile(
-                  leading: Icon(Icons.email, color: primaryColor, size: 30),
+                  leading: Icon(Icons.email, color: theme.primaryColor, size: 30),
                   subtitle: const Text("Correo electrónico"),
-                  title: Text("${widget.profile?.email}"),
+                  title: Text("${profile?.email}"),
                 ),
                 ListTile(
-                  leading: Icon(Icons.list, color: primaryColor, size: 30),
+                  leading: Icon(Icons.list, color: theme.primaryColor, size: 30),
                   subtitle: const Text("Gestionar usuarios"),
                   title: const Text("Lista de Usuarios"),
                   onTap: () {
@@ -135,22 +125,11 @@ class _ProfileState extends State<Profile> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => UserListScreen(
-                          currentUserName: widget.profile?.usrName ?? "",
+                          currentUserName: profile?.usrName ?? "",
                         ),
                       ),
                     );
                   },
-                ),
-                // Nueva opción: Configuración de Tema
-                ListTile(
-                  leading: Icon(Icons.brightness_6, color: primaryColor, size: 30),
-                  subtitle: const Text("Tema de la aplicación"),
-                  title: const Text("Modo Oscuro"),
-                  trailing: Switch(
-                    value: isDarkMode,
-                    onChanged: (value) => toggleTheme(value), // Cambiar el tema
-                    activeColor: Colors.blue,
-                  ),
                 ),
               ],
             ),
