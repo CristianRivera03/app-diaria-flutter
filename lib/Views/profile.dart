@@ -6,7 +6,7 @@ import '../JSON/users.dart';
 import 'auth.dart';
 import 'changePassword.dart';
 import 'user_screen_list.dart';
-import '../Components/navbar.dart';
+import 'theme_settings_page.dart';
 
 class Profile extends StatelessWidget {
   final Users? profile;
@@ -15,16 +15,36 @@ class Profile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      appBar: CustomAppBar(
-        title: "Gestión de Perfil",
-        onLeftTap: () {}, // Función vacía en lugar de null
-        onRightTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const HelpView()),
-          );
-        },
+      appBar: AppBar(
+        title: const Text("Gestión de Perfil"),
+        backgroundColor: theme.appBarTheme.backgroundColor,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.help_outline),
+            tooltip: "Ayuda",
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const HelpView()),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.color_lens_outlined),
+            tooltip: "Personalizar colores",
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ThemeSettingsPage(),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: SafeArea(
@@ -34,25 +54,25 @@ class Profile extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 CircleAvatar(
-                  backgroundColor: primaryColor,
+                  backgroundColor: theme.primaryColor,
                   radius: 77,
-                  child: CircleAvatar(
+                  child: const CircleAvatar(
                     backgroundImage: AssetImage("assets/no user.png"),
                     radius: 75,
                   ),
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 Text(
                   "Bienvenido ${profile?.fullName}",
                   style: TextStyle(
-                    color: primaryColor,
+                    color: theme.primaryColor,
                     fontSize: 30,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
                   "${profile?.email}",
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.black45,
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
@@ -68,19 +88,19 @@ class Profile extends StatelessWidget {
                   },
                 ),
                 ListTile(
-                  leading: Icon(Icons.person, color: primaryColor, size: 30),
-                  subtitle: Text("Nombre completo"),
+                  leading: Icon(Icons.person, color: theme.primaryColor, size: 30),
+                  subtitle: const Text("Nombre completo"),
                   title: Text("${profile?.fullName}"),
                 ),
                 ListTile(
-                  leading: Icon(Icons.account_circle, color: primaryColor, size: 30),
-                  subtitle: Text("Usuario"),
+                  leading: Icon(Icons.account_circle, color: theme.primaryColor, size: 30),
+                  subtitle: const Text("Usuario"),
                   title: Text("${profile?.usrName}"),
                 ),
                 ListTile(
-                  leading: Icon(Icons.lock, color: primaryColor, size: 30),
-                  subtitle: Text("Seguridad"),
-                  title: Text("Cambiar Contraseña"),
+                  leading: Icon(Icons.lock, color: theme.primaryColor, size: 30),
+                  subtitle: const Text("Seguridad"),
+                  title: const Text("Cambiar Contraseña"),
                   onTap: () {
                     Navigator.push(
                       context,
@@ -91,19 +111,21 @@ class Profile extends StatelessWidget {
                   },
                 ),
                 ListTile(
-                  leading: Icon(Icons.email, color: primaryColor, size: 30),
-                  subtitle: Text("Correo electrónico"),
+                  leading: Icon(Icons.email, color: theme.primaryColor, size: 30),
+                  subtitle: const Text("Correo electrónico"),
                   title: Text("${profile?.email}"),
                 ),
                 ListTile(
-                  leading: Icon(Icons.list, color: primaryColor, size: 30),
-                  subtitle: Text("Gestionar usuarios"),
-                  title: Text("Lista de Usuarios"),
+                  leading: Icon(Icons.list, color: theme.primaryColor, size: 30),
+                  subtitle: const Text("Gestionar usuarios"),
+                  title: const Text("Lista de Usuarios"),
                   onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => UserListScreen(currentUserName: profile?.usrName ?? ""),
+                        builder: (context) => UserListScreen(
+                          currentUserName: profile?.usrName ?? "",
+                        ),
                       ),
                     );
                   },
