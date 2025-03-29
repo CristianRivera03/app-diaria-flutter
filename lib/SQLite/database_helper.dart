@@ -260,4 +260,35 @@ class DatabaseHelper {
       return false;
     }
   }
+
+  Future<bool> updateEmail(String currentEmail, String newEmail) async {
+    try {
+      final db = await initDB();
+      int rowsAffected = await db.update(
+        'users', // Nombre de la tabla
+        {'email': newEmail}, // Actualización del correo
+        where: 'email = ?', // Condición
+        whereArgs: [currentEmail],
+      );
+      return rowsAffected > 0; // Retorna true si se actualizó al menos un registro
+    } catch (e) {
+      print('Error al actualizar el correo: $e');
+      return false;
+    }
+  }
+
+  Future<bool> isEmailTaken(String email) async {
+    try {
+      final db = await initDB();
+      final result = await db.query(
+        'users',
+        where: 'email = ?',
+        whereArgs: [email],
+      );
+      return result.isNotEmpty; // Retorna true si el correo ya está registrado
+    } catch (e) {
+      print('Error al verificar el correo: $e');
+      return false;
+    }
+  }
 }

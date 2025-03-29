@@ -5,6 +5,7 @@ import '../JSON/users.dart';
 import '../SQLite/database_helper.dart';
 import 'auth.dart';
 import 'changePassword.dart';
+import 'change_email.dart';
 import 'user_screen_list.dart';
 
 class Profile extends StatelessWidget {
@@ -67,8 +68,16 @@ class Profile extends StatelessWidget {
                 ),
                 ListTile(
                   leading: Icon(Icons.email, color: primaryColor, size: 30),
-                  subtitle: Text("Correo electrónico"),
+                  subtitle: Text("Cambiar Correo Electrónico"),
                   title: Text("${profile?.email}"),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChangeEmailScreen(profile: profile!),
+                      ),
+                    );
+                  },
                 ),
                 ListTile(
                   leading: Icon(Icons.list, color: primaryColor, size: 30),
