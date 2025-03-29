@@ -62,7 +62,8 @@ class DatabaseHelper {
 
   Future<Users?> getUser(String usrName) async {
     final Database db = await initDB();
-    final res = await db.query("users", where: "usrName = ?", whereArgs: [usrName]);
+    final res = await db.query(
+        "users", where: "usrName = ?", whereArgs: [usrName]);
     return res.isNotEmpty ? Users.fromMap(res.first) : null;
   }
 
@@ -95,7 +96,8 @@ class DatabaseHelper {
   Future<int> unblockUser(String usrName) async {
     try {
       final Database db = await initDB();
-      return await db.delete("blocked_users", where: "usrName = ?", whereArgs: [usrName]);
+      return await db.delete(
+          "blocked_users", where: "usrName = ?", whereArgs: [usrName]);
     } catch (e) {
       print("Error al desbloquear usuario: $e");
       return -1;
@@ -111,6 +113,7 @@ class DatabaseHelper {
     );
     return result.isNotEmpty;
   }
+
   //Restablecer y cambiar contraseña
   Future<bool> resetPassword(String email, String newPassword) async {
     try {
@@ -141,7 +144,8 @@ class DatabaseHelper {
     }
   }
 
-  Future<bool> changePassword(String usrName, String currentPassword, String newPassword) async {
+  Future<bool> changePassword(String usrName, String currentPassword,
+      String newPassword) async {
     try {
       final Database db = await initDB();
 
@@ -234,9 +238,56 @@ class DatabaseHelper {
     final storedCode = await getVerificationCode(email);
 
     if (storedCode != null && storedCode == enteredCode) {
-      await deleteVerificationCode(email); // Elimina el código después de verificar
+      await deleteVerificationCode(
+          email); // Elimina el código después de verificar
       return true; // Código válido
     }
     return false; // Código incorrecto
+  }
+
+  Future<bool> deleteUserAccount(String email) async {
+    try {
+      final db = await initDB();
+      int rowsDeleted = await db.delete(
+        'users',
+        where: 'email = ?',
+        whereArgs: [email],
+      );
+      return rowsDeleted > 0; // Retorna true si se eliminó al menos un registro
+    } catch (e) {
+      print("Error al eliminar el usuario: $e");
+      return false;
+    }
+  }
+
+  Future<bool> updateEmail(String currentEmail, String newEmail) async {
+    try {
+      final db = await initDB();
+      int rowsAffected = await db.update(
+        'users', // Nombre de la tabla
+        {'email': newEmail}, // Actualización del correo
+        where: 'email = ?', // Condición
+        whereArgs: [currentEmail],
+      );
+      return rowsAffected > 0; // Retorna true si se actualizó al menos un registro
+    } catch (e) {
+      print('Error al actualizar el correo: $e');
+      return false;
+    }
+  }
+
+  Future<bool> isEmailTaken(String email) async {
+    try {
+      final db = await initDB();
+      final result = await db.query(
+        'users',
+        where: 'email = ?',
+        whereArgs: [email],
+      );
+      return result.isNotEmpty; // Retorna true si el correo ya está registrado
+    } catch (e) {
+      print('Error al verificar el correo: $e');
+      return false;
+    }
   }
 }
