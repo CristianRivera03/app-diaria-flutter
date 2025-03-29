@@ -38,6 +38,9 @@ dependencies:
   path: ^1.9.1
   mailer: ^6.0.3
   flutter_svg: ^2.0.17
+  provider: ^6.1.4
+  shared_preferences: ^2.5.3
+  flutter_colorpicker: ^1.1.0
 
 dev_dependencies:
   flutter_test:

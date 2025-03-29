@@ -50,7 +50,6 @@ class DatabaseHelper {
       },
     );
   }
-
   Future<int> createUser(Users usr) async {
     try {
       final Database db = await initDB();

@@ -87,6 +87,7 @@ class Profile extends StatelessWidget {
                     );
                   },
                 ),
+
                 ListTile(
                   leading: Icon(Icons.person, color: theme.primaryColor, size: 30),
                   subtitle: const Text("Nombre completo"),
