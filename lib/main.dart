@@ -1,9 +1,22 @@
-import 'package:diaria/Views/auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
+import 'Services/theme_manager.dart';
+import 'Views/auth.dart';
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const MyApp());
+
+  final themeManager = ThemeManager();
+  await themeManager.loadTheme();
+
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => themeManager,
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -11,17 +24,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeManager = Provider.of<ThemeManager>(context);
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
-      theme: ThemeData(
-
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
-
-      // primera pantalla de la app
+      title: 'App Diaria',
+      theme: themeManager.themeData,
       home: const AuthScreen(),
     );
   }
 }
-

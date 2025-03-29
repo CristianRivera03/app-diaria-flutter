@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../Components/textfield.dart';
 import '../JSON/users.dart';
 import '../SQLite/database_helper.dart';
+import 'forgotPassword.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,24 +16,39 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  // Controladores para los campos de texto
   final usrName = TextEditingController();
   final password = TextEditingController();
-
   bool isChecked = false;
-  bool isLoginTrue = false;
+  bool isLoginError = false;
+  bool isBlocked = false;
   final db = DatabaseHelper();
-  // funcion para autenticar el usuario
-  login() async{
-    Users? userDetails = await db.getUser(usrName.text);
-    var res = await db.authenticate(Users(usrName: usrName.text, usrPassword: password.text));
-    if(res == true){
-      // si el login es correcto se dirige a la pantalla de perfil
-      if(!mounted) return;
-      Navigator.push(context, MaterialPageRoute(builder: (context) =>  Profile(profile: userDetails,)));
-    }else{
+
+  Future<void> login() async {
+    isBlocked = await db.isUserBlocked(usrName.text);
+
+    if (isBlocked) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('El usuario está bloqueado y no puede acceder.', style: TextStyle(color: Colors.red)),
+        ),
+      );
+      return;
+    }
+
+    var userAuthenticated = await db.authenticate(
+      Users(usrName: usrName.text, usrPassword: password.text),
+    );
+
+    if (userAuthenticated) {
+      Users? userDetails = await db.getUser(usrName.text);
+      if (!mounted) return;
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => Profile(profile: userDetails)),
+      );
+    } else {
       setState(() {
-        isLoginTrue = true;
+        isLoginError = true;
       });
     }
   }
@@ -48,28 +64,15 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  "Iniciar Sesion",
-                  style: TextStyle(
-                    color: primaryColor,
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  "Iniciar Sesión",
+                  style: TextStyle(color: primaryColor, fontSize: 30, fontWeight: FontWeight.bold),
                 ),
                 Image.asset("assets/imgDos.png"),
-                InputField(
-                  hint: "Usuario",
-                  icon: Icons.person,
-                  controller: usrName,
-                ),
-                InputField(
-                  hint: "Contraseña",
-                  icon: Icons.lock,
-                  controller: password,
-                  passwordInvisible: true,
-                ),
-                ListTile(
+                InputField(hint: "Usuario", icon: Icons.person, controller: usrName),
+                InputField(hint: "Contraseña", icon: Icons.lock, controller: password, passwordInvisible: true),
+                /*ListTile(
                   horizontalTitleGap: 2,
-                  title: const Text("Recuerdame"),
+                  title: const Text("Recuérdame"),
                   leading: Checkbox(
                     activeColor: primaryColor,
                     value: isChecked,
@@ -79,11 +82,22 @@ class _LoginScreenState extends State<LoginScreen> {
                       });
                     },
                   ),
+                ),*/
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()));
+                      },
+                      child: Text(
+                        "Olvide mi contraseña",
+                        style: TextStyle(color: primaryColor, fontSize: 15, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
                 ),
-                Button(label: "Iniciar Sesion", press: () {
-                  login();
-                }),
-
+                Button(label: "Iniciar Sesión", press: () => login()),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -95,23 +109,18 @@ class _LoginScreenState extends State<LoginScreen> {
                       onPressed: () {
                         Navigator.push(context, MaterialPageRoute(builder: (context) => const SignUpScreen()));
                       },
-                      child: const Text(
+                      child: Text(
                         "Registrarme",
-                        style: TextStyle(
-                          color: primaryColor,
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: TextStyle(color: primaryColor, fontSize: 15, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ],
                 ),
-
-
-                // esto se tiene que ocultar y solo monstrar cuando el login sea incorrecto
-                // si el login es correcto, se oculta
-                isLoginTrue ? Text("Usuario o contraseña incorrectos" , style: TextStyle(color: Colors.red.shade900, fontSize: 15),): const SizedBox(),
-
+                if (isLoginError)
+                  Text(
+                    "Usuario o contraseña incorrectos.",
+                    style: TextStyle(color: Colors.red.shade900, fontSize: 15),
+                  ),
               ],
             ),
           ),
