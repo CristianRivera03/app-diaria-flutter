@@ -5,13 +5,14 @@ import '../JSON/users.dart';
 class DatabaseHelper {
   final databaseName = "diaria.db";
 
-  final String userTable = ''' 
+  final String userTable = '''
   CREATE TABLE users (
     usrId INTEGER PRIMARY KEY AUTOINCREMENT,
     fullName TEXT,
     email TEXT,
     usrName TEXT UNIQUE,
-    usrPassword TEXT
+    usrPassword TEXT,
+    isActive INTEGER DEFAULT 0
   )
   ''';
 
@@ -29,7 +30,6 @@ class DatabaseHelper {
     created_at TEXT
   )
   ''';
-
 
   Future<Database> initDB() async {
     final databasePath = await getDatabasesPath();
@@ -63,7 +63,11 @@ class DatabaseHelper {
 
   Future<Users?> getUser(String usrName) async {
     final Database db = await initDB();
-    final res = await db.query("users", where: "usrName = ?", whereArgs: [usrName]);
+    final res = await db.query(
+      "users",
+      where: "usrName = ?",
+      whereArgs: [usrName],
+    );
     return res.isNotEmpty ? Users.fromMap(res.first) : null;
   }
 
@@ -74,6 +78,26 @@ class DatabaseHelper {
       [usr.usrName, usr.usrPassword],
     );
     return result.isNotEmpty;
+  }
+
+  Future<void> updateConnectionStatus(String usrName, bool isActive) async {
+    try {
+      final Database db = await initDB();
+      await db.update(
+        'users',
+        {'isActive': isActive ? 1 : 0},
+        where: 'usrName = ?',
+        whereArgs: [usrName],
+      );
+    } catch (e) {
+      print('Error al actualizar el estado de conexión: $e');
+    }
+  }
+
+  Future<List<Users>> getAllUsers() async {
+    final db = await initDB();
+    final List<Map<String, dynamic>> result = await db.query('users');
+    return result.map((user) => Users.fromMap(user)).toList();
   }
 
   Future<int> blockUser(String usrName) async {
@@ -96,7 +120,11 @@ class DatabaseHelper {
   Future<int> unblockUser(String usrName) async {
     try {
       final Database db = await initDB();
-      return await db.delete("blocked_users", where: "usrName = ?", whereArgs: [usrName]);
+      return await db.delete(
+        "blocked_users",
+        where: "usrName = ?",
+        whereArgs: [usrName],
+      );
     } catch (e) {
       print("Error al desbloquear usuario: $e");
       return -1;
@@ -112,11 +140,10 @@ class DatabaseHelper {
     );
     return result.isNotEmpty;
   }
-  //Restablecer y cambiar contraseña
+
   Future<bool> resetPassword(String email, String newPassword) async {
     try {
       final Database db = await initDB();
-      // Verifica si el correo existe
       final user = await db.query(
         "users",
         where: "email = ?",
@@ -124,7 +151,6 @@ class DatabaseHelper {
       );
 
       if (user.isNotEmpty) {
-        // Actualiza la contraseña
         await db.update(
           "users",
           {"usrPassword": newPassword},
@@ -133,7 +159,6 @@ class DatabaseHelper {
         );
         return true;
       } else {
-        // Correo no encontrado
         return false;
       }
     } catch (e) {
@@ -142,11 +167,11 @@ class DatabaseHelper {
     }
   }
 
-  Future<bool> changePassword(String usrName, String currentPassword, String newPassword) async {
+  Future<bool> changePassword(
+      String usrName, String currentPassword, String newPassword) async {
     try {
       final Database db = await initDB();
 
-      // Verificar que el usuario exista y la contraseña actual sea correcta
       final List<Map<String, dynamic>> userQuery = await db.query(
         "users",
         where: "usrName = ? AND usrPassword = ?",
@@ -154,7 +179,6 @@ class DatabaseHelper {
       );
 
       if (userQuery.isNotEmpty) {
-        // Actualizar la contraseña
         final int rowsAffected = await db.update(
           "users",
           {"usrPassword": newPassword},
@@ -162,12 +186,9 @@ class DatabaseHelper {
           whereArgs: [usrName],
         );
 
-        if (rowsAffected > 0) {
-          return true; // Contraseña actualizada exitosamente
-        }
+        return rowsAffected > 0;
       }
 
-      // Retorna false si no se encontró el usuario o si la contraseña actual es incorrecta
       return false;
     } catch (e) {
       print("Error al cambiar la contraseña: $e");
@@ -177,18 +198,18 @@ class DatabaseHelper {
 
   Future<bool> updatePassword(String email, String newPassword) async {
     try {
-      final Database db = await initDB(); // Inicializa la base de datos
+      final Database db = await initDB();
       int rowsAffected = await db.update(
-        'users', // Nombre de la tabla
-        {'usrPassword': newPassword}, // Nuevo valor para la contraseña
-        where: 'email = ?', // Condición para encontrar el usuario
+        'users',
+        {'usrPassword': newPassword},
+        where: 'email = ?',
         whereArgs: [email],
       );
 
-      return rowsAffected > 0; // Retorna true si se actualizó al menos una fila
+      return rowsAffected > 0;
     } catch (e) {
       print('Error al actualizar la contraseña: $e');
-      return false; // Retorna false si hay un error
+      return false;
     }
   }
 
@@ -204,7 +225,7 @@ class DatabaseHelper {
     if (result.isNotEmpty) {
       return result.first['code'] as String;
     }
-    return null; // No se encontró un código para el correo
+    return null;
   }
 
   Future<void> storeVerificationCode(String email, String code) async {
@@ -235,9 +256,55 @@ class DatabaseHelper {
     final storedCode = await getVerificationCode(email);
 
     if (storedCode != null && storedCode == enteredCode) {
-      await deleteVerificationCode(email); // Elimina el código después de verificar
-      return true; // Código válido
+      await deleteVerificationCode(email);
+      return true;
     }
-    return false; // Código incorrecto
+    return false;
+  }
+
+  Future<bool> deleteUserAccount(String email) async {
+    try {
+      final db = await initDB();
+      int rowsDeleted = await db.delete(
+        'users',
+        where: 'email = ?',
+        whereArgs: [email],
+      );
+      return rowsDeleted > 0;
+    } catch (e) {
+      print("Error al eliminar el usuario: $e");
+      return false;
+    }
+  }
+
+  Future<bool> updateEmail(String currentEmail, String newEmail) async {
+    try {
+      final db = await initDB();
+      int rowsAffected = await db.update(
+        'users',
+        {'email': newEmail},
+        where: 'email = ?',
+        whereArgs: [currentEmail],
+      );
+      return rowsAffected > 0;
+    } catch (e) {
+      print('Error al actualizar el correo: $e');
+      return false;
+    }
+  }
+
+  Future<bool> isEmailTaken(String email) async {
+    try {
+      final db = await initDB();
+      final result = await db.query(
+        'users',
+        where: 'email = ?',
+        whereArgs: [email],
+      );
+      return result.isNotEmpty;
+    } catch (e) {
+      print('Error al verificar el correo: $e');
+      return false;
+    }
   }
 }
