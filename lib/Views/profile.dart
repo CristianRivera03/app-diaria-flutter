@@ -115,7 +115,7 @@ class Profile extends StatelessWidget {
                 ),
                 ListTile(
                   leading: Icon(Icons.email, color: theme.primaryColor, size: 30),
-                  subtitle: const Text("Correo electrónico"),
+                  subtitle: const Text("Cambiar Correo Electrónico"),
                   title: Text("${profile?.email}"),
                   onTap: () {
                     Navigator.push(
@@ -153,7 +153,6 @@ class Profile extends StatelessWidget {
       ),
     );
   }
-
   // Metodo para mostrar el cuadro de diálogo de confirmación
   void _showDeleteConfirmationDialog(BuildContext context) {
     showDialog(
