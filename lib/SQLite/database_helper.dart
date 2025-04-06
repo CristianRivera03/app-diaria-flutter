@@ -12,7 +12,8 @@ class DatabaseHelper {
     email TEXT,
     usrName TEXT UNIQUE,
     usrPassword TEXT,
-    isActive INTEGER DEFAULT 0
+    isActive INTEGER DEFAULT 0,
+    profileImage TEXT
   )
   ''';
 
@@ -37,15 +38,22 @@ class DatabaseHelper {
 
     return openDatabase(
       path,
-      version: 3,
+      version: 4, // Incrementamos la versión para la nueva columna "profileImage"
       onCreate: (db, version) async {
         await db.execute(userTable);
         await db.execute(blockedUsersTable);
         await db.execute(verificationCodesTable);
       },
       onUpgrade: (db, oldVersion, newVersion) async {
-        if (oldVersion < 3) {
-          await db.execute(verificationCodesTable);
+        if (oldVersion < 4) {
+          // Comprobar si la columna 'profileImage' ya existe
+          final tableInfo = await db.rawQuery("PRAGMA table_info(users)");
+          final hasColumn = tableInfo.any((column) =>
+          column['name'] == 'profileImage');
+
+          if (!hasColumn) {
+            await db.execute("ALTER TABLE users ADD COLUMN profileImage TEXT;");
+          }
         }
       },
     );
@@ -251,7 +259,19 @@ class DatabaseHelper {
       whereArgs: [email],
     );
   }
-
+  Future<void> updateProfileImage(String usrName, String imagePath) async {
+    try {
+      final Database db = await initDB();
+      await db.update(
+        'users',
+        {'profileImage': imagePath}, // Guarda la ruta de la imagen
+        where: 'usrName = ?',
+        whereArgs: [usrName],
+      );
+    } catch (e) {
+      print('Error al actualizar la imagen de perfil: $e');
+    }
+  }
   Future<bool> verifyCode(String email, String enteredCode) async {
     final storedCode = await getVerificationCode(email);
 
