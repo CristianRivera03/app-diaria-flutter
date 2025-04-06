@@ -65,19 +65,24 @@ class DatabaseHelper {
     final Database db = await initDB();
     final res = await db.query(
       "users",
-      where: "usrName = ?",
-      whereArgs: [usrName],
+      where: "usrName = ? OR email = ?",
+      whereArgs: [usrName, usrName],
     );
     return res.isNotEmpty ? Users.fromMap(res.first) : null;
   }
 
   Future<bool> authenticate(Users usr) async {
-    final Database db = await initDB();
-    final result = await db.rawQuery(
-      "SELECT * FROM users WHERE usrName = ? AND usrPassword = ?",
-      [usr.usrName, usr.usrPassword],
+    final db = await initDB();
+
+    // Buscar usuario por nombre de usuario o correo
+    final result = await db.query(
+      'users', // Nombre de la tabla
+      where: '(usrName = ? OR email = ?) AND usrPassword = ?', // Verificar usuario o correo
+      whereArgs: [usr.usrName, usr.usrName, usr.usrPassword],
     );
-    return result.isNotEmpty;
+
+    return result.isNotEmpty; // Retorna true si se encontró un usuario
+
   }
 
   Future<void> updateConnectionStatus(String usrName, bool isActive) async {

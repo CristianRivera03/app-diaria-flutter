@@ -112,7 +112,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   style: TextStyle(color: primaryColor, fontSize: 30, fontWeight: FontWeight.bold),
                 ),
                 Image.asset("assets/imgDos.png"),
-                InputField(hint: "Usuario", icon: Icons.person, controller: usrName),
+                InputField(hint: "Usuario o Correo", icon: Icons.person, controller: usrName),
                 InputField(hint: "Contraseña", icon: Icons.lock, controller: password, passwordInvisible: true),
                 ListTile(
                   horizontalTitleGap: 2,
