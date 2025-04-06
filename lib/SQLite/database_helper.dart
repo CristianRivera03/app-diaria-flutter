@@ -12,8 +12,7 @@ class DatabaseHelper {
     email TEXT,
     usrName TEXT UNIQUE,
     usrPassword TEXT,
-    isActive INTEGER DEFAULT 0,
-    profileImage TEXT
+    isActive INTEGER DEFAULT 0
   )
   ''';
 
@@ -38,15 +37,15 @@ class DatabaseHelper {
 
     return openDatabase(
       path,
-      version: 4, // Incrementamos la versión para la nueva columna "profileImage"
+      version: 3,
       onCreate: (db, version) async {
         await db.execute(userTable);
         await db.execute(blockedUsersTable);
         await db.execute(verificationCodesTable);
       },
       onUpgrade: (db, oldVersion, newVersion) async {
-        if (oldVersion < 4) {
-          await db.execute("ALTER TABLE users ADD COLUMN profileImage TEXT;");
+        if (oldVersion < 3) {
+          await db.execute(verificationCodesTable);
         }
       },
     );
@@ -211,20 +210,6 @@ class DatabaseHelper {
     } catch (e) {
       print('Error al actualizar la contraseña: $e');
       return false;
-    }
-  }
-
-  Future<void> updateProfileImage(String usrName, String imagePath) async {
-    try {
-      final Database db = await initDB();
-      await db.update(
-        'users',
-        {'profileImage': imagePath}, // Guarda la ruta de la imagen
-        where: 'usrName = ?',
-        whereArgs: [usrName],
-      );
-    } catch (e) {
-      print('Error al actualizar la imagen de perfil: $e');
     }
   }
 
