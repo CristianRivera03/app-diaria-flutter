@@ -11,6 +11,7 @@ class Users {
   final String usrName;
   final String usrPassword;
   final bool isActive; // Estado de conexión
+  final String? profileImage; // Ruta de la imagen de perfil
 
   Users({
     this.usrId,
@@ -19,6 +20,7 @@ class Users {
     required this.usrName,
     required this.usrPassword,
     this.isActive = false, // Desconectado por defecto
+    this.profileImage, // Inicialmente nulo
   });
 
   // Convertir desde el mapa de la base de datos
@@ -29,6 +31,7 @@ class Users {
     usrName: json["usrName"],
     usrPassword: json["usrPassword"],
     isActive: json["isActive"] == 1,
+    profileImage: json["profileImage"], // Recupera la ruta de la imagen de perfil
   );
 
   // Convertir a un mapa para insertar en la base de datos
@@ -39,5 +42,6 @@ class Users {
     "usrName": usrName,
     "usrPassword": usrPassword,
     "isActive": isActive ? 1 : 0,
+    "profileImage": profileImage, // Guarda la ruta de la imagen de perfil
   };
 }

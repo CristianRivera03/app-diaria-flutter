@@ -1,5 +1,7 @@
 import 'package:diaria/Views/help_view.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart'; // Importación para selección de imágenes
+import 'dart:io'; // Importación para manejar archivos
 import '../Components/button.dart';
 import '../Components/colors.dart';
 import '../JSON/users.dart';
@@ -8,7 +10,7 @@ import 'auth.dart';
 import 'changePassword.dart';
 import 'change_email.dart';
 import 'user_screen_list.dart';
-import 'user_status_list.dart'; // Nueva importación para la lista de estado de usuarios
+import 'user_status_list.dart';
 import 'theme_settings_page.dart';
 
 class Profile extends StatefulWidget {
@@ -22,11 +24,13 @@ class Profile extends StatefulWidget {
 
 class _ProfileState extends State<Profile> {
   bool isActive = false; // Estado inicial del usuario
+  File? _profileImage; // Imagen seleccionada por el usuario
 
   @override
   void initState() {
     super.initState();
-    fetchUserStatus(); // Obtener estado de conexión inicial
+    fetchUserStatus(); // Obtener estado inicial del usuario
+    fetchProfileImage(); // Obtener imagen de perfil inicial
   }
 
   Future<void> fetchUserStatus() async {
@@ -36,6 +40,37 @@ class _ProfileState extends State<Profile> {
       setState(() {
         isActive = user.isActive;
       });
+    }
+  }
+
+  Future<void> fetchProfileImage() async {
+    final db = DatabaseHelper();
+    Users? user = await db.getUser(widget.profile!.usrName);
+    if (user != null && user.profileImage != null) {
+      setState(() {
+        _profileImage = File(user.profileImage!); // Carga la imagen guardada en la base de datos
+      });
+    }
+  }
+
+  Future<void> updateProfileImage(String imagePath) async {
+    final db = DatabaseHelper();
+    await db.updateProfileImage(widget.profile!.usrName, imagePath); // Guarda la ruta en la base de datos
+  }
+
+  Future<void> pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _profileImage = File(pickedFile.path); // Carga la imagen seleccionada
+      });
+      await updateProfileImage(pickedFile.path); // Guarda la ruta de la imagen en la base de datos
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("No se seleccionó ninguna imagen.")),
+      );
     }
   }
 
@@ -90,10 +125,21 @@ class _ProfileState extends State<Profile> {
             padding: const EdgeInsets.symmetric(vertical: 45.0, horizontal: 20),
             child: Column(
               children: [
-                CircleAvatar(
-                  backgroundColor: Theme.of(context).primaryColor,
-                  radius: 75,
-                  backgroundImage: const AssetImage("assets/no user.png"),
+                Stack(
+                  alignment: Alignment.bottomRight,
+                  children: [
+                    CircleAvatar(
+                      backgroundColor: Theme.of(context).primaryColor,
+                      radius: 75,
+                      backgroundImage: _profileImage != null
+                          ? FileImage(_profileImage!)
+                          : const AssetImage("assets/no user.png") as ImageProvider,
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.camera_alt, color: Colors.white, size: 30),
+                      onPressed: pickImage, // Abre el selector de imágenes
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 10),
                 Text(
