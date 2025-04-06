@@ -91,6 +91,8 @@ class _ProfileState extends State<Profile> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Gestión de Perfil"),
@@ -188,6 +190,7 @@ class _ProfileState extends State<Profile> {
                 ),
                 ListTile(
                   leading: Icon(Icons.lock, size: 30, color: Theme.of(context).primaryColor),
+
                   subtitle: const Text("Seguridad"),
                   title: const Text("Cambiar Contraseña"),
                   onTap: () {
@@ -195,11 +198,13 @@ class _ProfileState extends State<Profile> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => ChangePasswordScreen(profile: widget.profile!),
+
                       ),
                     );
                   },
                 ),
                 ListTile(
+
                   leading: Icon(Icons.email, size: 30, color: Theme.of(context).primaryColor),
                   subtitle: const Text("Correo Electrónico"),
                   title: Text("${widget.profile?.email}"),
@@ -222,6 +227,7 @@ class _ProfileState extends State<Profile> {
                       MaterialPageRoute(
                         builder: (context) =>
                             UserListScreen(currentUserName: widget.profile?.usrName ?? ""),
+
                       ),
                     );
                   },
@@ -230,6 +236,7 @@ class _ProfileState extends State<Profile> {
                   leading: Icon(Icons.network_check, size: 30, color: Theme.of(context).primaryColor),
                   subtitle: const Text("Estado de Usuarios"),
                   title: const Text("Lista de Estado"),
+
                   onTap: () {
                     Navigator.push(
                       context,
@@ -251,7 +258,6 @@ class _ProfileState extends State<Profile> {
       ),
     );
   }
-
   void _showDeleteConfirmationDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -291,12 +297,15 @@ class _ProfileState extends State<Profile> {
     final db = DatabaseHelper();
 
     try {
+
       final String currentUserEmail = widget.profile!.email!;
+
       bool success = await db.deleteUserAccount(currentUserEmail);
 
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Cuenta eliminada con éxito.")),
+
         );
 
         // Redirige al inicio de sesión
@@ -307,13 +316,16 @@ class _ProfileState extends State<Profile> {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
+
           const SnackBar(content: Text("Error al eliminar la cuenta. Inténtalo de nuevo.")),
+
         );
       }
     } catch (e) {
       print("Error al eliminar la cuenta: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Ocurrió un error inesperado. Inténtalo más tarde.")),
+
       );
     }
   }

@@ -32,6 +32,7 @@ class DatabaseHelper {
   )
   ''';
 
+
   Future<Database> initDB() async {
     final databasePath = await getDatabasesPath();
     final path = join(databasePath, databaseName);
@@ -39,12 +40,14 @@ class DatabaseHelper {
     return openDatabase(
       path,
       version: 4, // Incrementamos la versión para la nueva columna "profileImage"
+
       onCreate: (db, version) async {
         await db.execute(userTable);
         await db.execute(blockedUsersTable);
         await db.execute(verificationCodesTable);
       },
       onUpgrade: (db, oldVersion, newVersion) async {
+
         if (oldVersion < 4) {
           // Comprobar si la columna 'profileImage' ya existe
           final tableInfo = await db.rawQuery("PRAGMA table_info(users)");
@@ -58,7 +61,6 @@ class DatabaseHelper {
       },
     );
   }
-
   Future<int> createUser(Users usr) async {
     try {
       final Database db = await initDB();
@@ -76,6 +78,7 @@ class DatabaseHelper {
       where: "usrName = ?",
       whereArgs: [usrName],
     );
+
     return res.isNotEmpty ? Users.fromMap(res.first) : null;
   }
 
@@ -133,6 +136,7 @@ class DatabaseHelper {
         where: "usrName = ?",
         whereArgs: [usrName],
       );
+
     } catch (e) {
       print("Error al desbloquear usuario: $e");
       return -1;
@@ -149,6 +153,7 @@ class DatabaseHelper {
     return result.isNotEmpty;
   }
 
+
   Future<bool> resetPassword(String email, String newPassword) async {
     try {
       final Database db = await initDB();
@@ -159,6 +164,7 @@ class DatabaseHelper {
       );
 
       if (user.isNotEmpty) {
+
         await db.update(
           "users",
           {"usrPassword": newPassword},
@@ -187,15 +193,16 @@ class DatabaseHelper {
       );
 
       if (userQuery.isNotEmpty) {
+
         final int rowsAffected = await db.update(
           "users",
           {"usrPassword": newPassword},
           where: "usrName = ?",
           whereArgs: [usrName],
         );
-
         return rowsAffected > 0;
       }
+
 
       return false;
     } catch (e) {
@@ -206,6 +213,7 @@ class DatabaseHelper {
 
   Future<bool> updatePassword(String email, String newPassword) async {
     try {
+
       final Database db = await initDB();
       int rowsAffected = await db.update(
         'users',
@@ -233,7 +241,9 @@ class DatabaseHelper {
     if (result.isNotEmpty) {
       return result.first['code'] as String;
     }
+
     return null;
+
   }
 
   Future<void> storeVerificationCode(String email, String code) async {
@@ -259,6 +269,7 @@ class DatabaseHelper {
       whereArgs: [email],
     );
   }
+
   Future<void> updateProfileImage(String usrName, String imagePath) async {
     try {
       final Database db = await initDB();
@@ -272,14 +283,17 @@ class DatabaseHelper {
       print('Error al actualizar la imagen de perfil: $e');
     }
   }
+
   Future<bool> verifyCode(String email, String enteredCode) async {
     final storedCode = await getVerificationCode(email);
 
     if (storedCode != null && storedCode == enteredCode) {
+
       await deleteVerificationCode(email);
       return true;
     }
     return false;
+
   }
 
   Future<bool> deleteUserAccount(String email) async {
@@ -290,7 +304,9 @@ class DatabaseHelper {
         where: 'email = ?',
         whereArgs: [email],
       );
+
       return rowsDeleted > 0;
+
     } catch (e) {
       print("Error al eliminar el usuario: $e");
       return false;
@@ -301,12 +317,14 @@ class DatabaseHelper {
     try {
       final db = await initDB();
       int rowsAffected = await db.update(
+
         'users',
         {'email': newEmail},
         where: 'email = ?',
         whereArgs: [currentEmail],
       );
       return rowsAffected > 0;
+
     } catch (e) {
       print('Error al actualizar el correo: $e');
       return false;
@@ -321,10 +339,14 @@ class DatabaseHelper {
         where: 'email = ?',
         whereArgs: [email],
       );
+
       return result.isNotEmpty;
+
     } catch (e) {
       print('Error al verificar el correo: $e');
       return false;
     }
   }
+
 }
+
