@@ -4,7 +4,7 @@ import 'package:diaria/Views/profile.dart';
 import 'package:diaria/Views/signup.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // Importar para guardar datos
-import '../Components/textfield.dart';
+import '../Components/textfield.dart'; // Agregado del segundo código
 import '../JSON/users.dart';
 import '../SQLite/database_helper.dart';
 import 'forgotPassword.dart';
@@ -19,6 +19,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController usrName = TextEditingController();
   final TextEditingController password = TextEditingController();
+  bool isPasswordVisible = false; // Estado de visibilidad de la contraseña
   bool isChecked = false; // Estado del checkbox para recordar usuario
   bool isLoginError = false; // Estado de error en el login
   bool isBlocked = false; // Estado de usuario bloqueado
@@ -112,8 +113,59 @@ class _LoginScreenState extends State<LoginScreen> {
                   style: TextStyle(color: primaryColor, fontSize: 30, fontWeight: FontWeight.bold),
                 ),
                 Image.asset("assets/imgDos.png"),
+
+                // PRIMER CAMBIO: puedes intercambiar entre este bloque o el siguiente (según prefieras usar TextField o InputField)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 1.0),
+                  child: TextField(
+                    controller: usrName,
+                    decoration: InputDecoration(
+                      hintText: "Usuario",
+                      prefixIcon: Icon(Icons.person),
+                      fillColor: Colors.blue.shade50,
+                      filled: true,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                  child: TextField(
+                    controller: password,
+                    obscureText: !isPasswordVisible,
+                    decoration: InputDecoration(
+                      hintText: "Contraseña",
+                      prefixIcon: Icon(Icons.lock),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                          color: Colors.grey,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            isPasswordVisible = !isPasswordVisible;
+                          });
+                        },
+                      ),
+                      fillColor: Colors.blue.shade50,
+                      filled: true,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                ),
+
+                // SEGUNDO CAMBIO: esta es la versión que usa el componente personalizado InputField
+                /*
                 InputField(hint: "Usuario", icon: Icons.person, controller: usrName),
                 InputField(hint: "Contraseña", icon: Icons.lock, controller: password, passwordInvisible: true),
+                */
+
                 ListTile(
                   horizontalTitleGap: 2,
                   title: const Text("Recuérdame"),

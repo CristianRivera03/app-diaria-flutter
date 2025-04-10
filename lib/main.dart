@@ -5,7 +5,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'Services/theme_manager.dart';
 import 'Views/auth.dart';
 
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -16,7 +15,6 @@ void main() async {
     ChangeNotifierProvider(
       create: (_) => themeManager,
       child: const MyApp(),
-
     ),
   );
 }
@@ -36,3 +34,4 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
