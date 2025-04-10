@@ -1,6 +1,8 @@
+import 'package:diaria/Views/add_contact_screen.dart';
 import 'package:diaria/Views/help_view.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart'; // Importación para selección de imágenes
+import 'package:sqflite/sqflite.dart';
 import 'dart:io'; // Importación para manejar archivos
 import '../Components/button.dart';
 import '../Components/colors.dart';
@@ -316,5 +318,7 @@ class _ProfileState extends State<Profile> {
         const SnackBar(content: Text("Ocurrió un error inesperado. Inténtalo más tarde.")),
       );
     }
+
   }
+
 }

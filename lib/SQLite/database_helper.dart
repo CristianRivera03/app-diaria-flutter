@@ -32,21 +32,31 @@ class DatabaseHelper {
   )
   ''';
 
+  final String contactsTable = '''
+CREATE TABLE contacts (
+  contactId INTEGER PRIMARY KEY AUTOINCREMENT,
+  fullName TEXT NOT NULL,
+  contactNumber TEXT NOT NULL
+)
+''';
+
   Future<Database> initDB() async {
     final databasePath = await getDatabasesPath();
     final path = join(databasePath, databaseName);
 
     return openDatabase(
       path,
-      version: 4, // Incrementamos la versión para la nueva columna "profileImage"
+      version: 5, // Incrementamos la versión para la nueva columna "profileImage"
       onCreate: (db, version) async {
         await db.execute(userTable);
         await db.execute(blockedUsersTable);
         await db.execute(verificationCodesTable);
+        await db.execute(contactsTable); // Crear la tabla de contactos
       },
       onUpgrade: (db, oldVersion, newVersion) async {
-        if (oldVersion < 4) {
+        if (oldVersion < 5) {
           // Comprobar si la columna 'profileImage' ya existe
+          await db.execute("CREATE TABLE IF NOT EXISTS contacts (contactId INTEGER PRIMARY KEY AUTOINCREMENT, fullName TEXT NOT NULL, contactNumber TEXT NOT NULL);");
           final tableInfo = await db.rawQuery("PRAGMA table_info(users)");
           final hasColumn = tableInfo.any((column) =>
           column['name'] == 'profileImage');
@@ -327,4 +337,20 @@ class DatabaseHelper {
       return false;
     }
   }
+  Future<int> addContact(String fullName, String contactNumber) async {
+    try {
+      final Database db = await initDB();
+      return await db.insert(
+        "contacts",
+        {
+          "fullName": fullName,
+          "contactNumber": contactNumber,
+        },
+      );
+    } catch (e) {
+      print("Error al registrar el contacto: $e");
+      return -1;
+    }
+  }
+
 }
