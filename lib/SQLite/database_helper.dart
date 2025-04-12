@@ -40,6 +40,7 @@ CREATE TABLE contacts (
 )
 ''';
 
+
   Future<Database> initDB() async {
     final databasePath = await getDatabasesPath();
     final path = join(databasePath, databaseName);
@@ -83,8 +84,8 @@ CREATE TABLE contacts (
     final Database db = await initDB();
     final res = await db.query(
       "users",
-      where: "usrName = ?",
-      whereArgs: [usrName],
+      where: "usrName = ? OR email = ?",
+      whereArgs: [usrName, usrName],
     );
     return res.isNotEmpty ? Users.fromMap(res.first) : null;
   }
@@ -92,8 +93,8 @@ CREATE TABLE contacts (
   Future<bool> authenticate(Users usr) async {
     final Database db = await initDB();
     final result = await db.rawQuery(
-      "SELECT * FROM users WHERE usrName = ? AND usrPassword = ?",
-      [usr.usrName, usr.usrPassword],
+      "SELECT * FROM users WHERE (usrName = ? OR email = ?) AND usrPassword = ?",
+      [usr.usrName, usr.usrName, usr.usrPassword],
     );
     return result.isNotEmpty;
   }
@@ -352,6 +353,44 @@ CREATE TABLE contacts (
       return -1;
     }
   }
+
+  Future<List<Map<String, dynamic>>> getAllContacts() async {
+    final db = await initDB();
+    return await db.query("contacts");
+  }
+
+  Future<int> deleteContact(int contactId) async {
+    try {
+      final Database db = await initDB();
+      return await db.delete(
+        "contacts",
+        where: "contactId = ?",
+        whereArgs: [contactId],
+      );
+    } catch (e) {
+      print("Error al eliminar el contacto: $e");
+      return -1;
+    }
+  }
+
+  Future<int> updateContact(int contactId, String fullName, String contactNumber) async {
+    try {
+      final Database db = await initDB();
+      return await db.update(
+        "contacts",
+        {
+          "fullName": fullName,
+          "contactNumber": contactNumber,
+        },
+        where: "contactId = ?",
+        whereArgs: [contactId],
+      );
+    } catch (e) {
+      print("Error al actualizar el contacto: $e");
+      return -1;
+    }
+  }
+
   Future<void> deleteDatabaseFile(String databaseName) async {
     final databasePath = await getDatabasesPath();
     final path = join(databasePath, databaseName);

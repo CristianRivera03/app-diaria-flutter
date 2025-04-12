@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import '../Components/button.dart';
-import '../Components/colors.dart';
 import '../SQLite/database_helper.dart';
 import '../JSON/users.dart';
+import 'package:provider/provider.dart'; // Importa Provider
+import '../Services/theme_manager.dart'; // Importa el ThemeManager
 
 class ChangePasswordScreen extends StatefulWidget {
-  final Users profile; // Se pasa el perfil del usuario actual
+  final Users profile;
 
   const ChangePasswordScreen({super.key, required this.profile});
 
@@ -22,7 +23,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   final DatabaseHelper db = DatabaseHelper();
 
   Future<void> _changePassword() async {
-    // Validación de campos
     String currentPassword = _currentPasswordController.text.trim();
     String newPassword = _newPasswordController.text.trim();
     String confirmPassword = _confirmPasswordController.text.trim();
@@ -41,7 +41,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       return;
     }
 
-    // Verificar si la contraseña actual es correcta
     setState(() {
       _isProcessing = true;
     });
@@ -60,7 +59,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       return;
     }
 
-    // Actualizar la contraseña en la base de datos
     bool success = await db.changePassword(widget.profile.usrName, currentPassword, newPassword);
 
     setState(() {
@@ -79,10 +77,13 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Accedemos al ThemeManager a través del Provider
+    final themeManager = Provider.of<ThemeManager>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Cambiar Contraseña'),
-        backgroundColor: primaryColor,
+        backgroundColor: themeManager.primaryColor, // Usamos el color primario del tema
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -94,7 +95,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: primaryColor,
+                color: themeManager.primaryColor, // Usamos el color primario del tema
               ),
             ),
             SizedBox(height: 20),
@@ -104,6 +105,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               decoration: InputDecoration(
                 labelText: 'Contraseña Actual',
                 border: OutlineInputBorder(),
+                labelStyle: TextStyle(color: themeManager.primaryColor), // Usamos el color primario del tema
               ),
             ),
             SizedBox(height: 20),
@@ -113,6 +115,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               decoration: InputDecoration(
                 labelText: 'Nueva Contraseña',
                 border: OutlineInputBorder(),
+                labelStyle: TextStyle(color: themeManager.primaryColor), // Usamos el color primario del tema
               ),
             ),
             SizedBox(height: 20),
@@ -122,6 +125,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               decoration: InputDecoration(
                 labelText: 'Confirmar Nueva Contraseña',
                 border: OutlineInputBorder(),
+                labelStyle: TextStyle(color: themeManager.primaryColor), // Usamos el color primario del tema
               ),
             ),
             SizedBox(height: 30),
@@ -130,6 +134,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 : Button(
               label: 'Actualizar Contraseña',
               press: _changePassword,
+              color: themeManager.primaryColor, // Usamos el color primario del tema
             ),
           ],
         ),

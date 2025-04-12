@@ -1,7 +1,6 @@
 import 'package:diaria/Views/verifyCode.dart';
 import 'package:flutter/material.dart';
 import '../Components/button.dart';
-import '../Components/colors.dart';
 import '../Components/textfield.dart';
 import '../Services/email_services.dart';
 
@@ -20,17 +19,15 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
     if (email.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Por favor, introduce un correo electrónico')),
+        const SnackBar(content: Text('Por favor, introduce un correo electrónico')),
       );
       return;
     }
 
     try {
-      // Generar y enviar el código
       final emailService = EmailService();
       await emailService.sendVerificationCode(email);
 
-      // Redirigir al usuario a la pantalla de verificación de código
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => VerifyCodeScreen(email: email)),
@@ -44,10 +41,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Recuperar Contraseña'),
-        backgroundColor: primaryColor,
+        title: const Text('Recuperar Contraseña'),
+        foregroundColor: theme.colorScheme.onPrimary,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -57,18 +56,17 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             Text(
               "Recuperar Contraseña",
               style: TextStyle(
-                color: primaryColor,
                 fontSize: 30,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             InputField(
               hint: "Correo Electrónico",
               icon: Icons.email,
               controller: _emailController,
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Button(
               label: "Enviar Código",
               press: sendVerificationCode,
@@ -78,7 +76,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               child: Text(
                 "Cancelar",
                 style: TextStyle(
-                  color: primaryColor,
+                  color: theme.colorScheme.primary,
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
                 ),
