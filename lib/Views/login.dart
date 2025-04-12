@@ -1,13 +1,13 @@
 import 'package:diaria/Components/button.dart';
 import 'package:diaria/Components/colors.dart';
-import 'package:diaria/Views/profile.dart';
 import 'package:diaria/Views/signup.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // Importar para guardar datos
-import '../Components/textfield.dart'; // Agregado del segundo código
+import 'package:shared_preferences/shared_preferences.dart';
+import '../Components/textfield.dart';
 import '../JSON/users.dart';
 import '../SQLite/database_helper.dart';
 import 'forgotPassword.dart';
+import 'package:diaria/Views/main_view.dart'; // IMPORTACIÓN DE MAIN VIEW
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -19,16 +19,16 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController usrName = TextEditingController();
   final TextEditingController password = TextEditingController();
-  bool isPasswordVisible = false; // Estado de visibilidad de la contraseña
-  bool isChecked = false; // Estado del checkbox para recordar usuario
-  bool isLoginError = false; // Estado de error en el login
-  bool isBlocked = false; // Estado de usuario bloqueado
-  final db = DatabaseHelper(); // Instancia de la base de datos
+  bool isPasswordVisible = false;
+  bool isChecked = false;
+  bool isLoginError = false;
+  bool isBlocked = false;
+  final db = DatabaseHelper();
 
   @override
   void initState() {
     super.initState();
-    loadSavedCredentials(); // Cargar credenciales guardadas al iniciar la app
+    loadSavedCredentials();
   }
 
   Future<void> loadSavedCredentials() async {
@@ -80,13 +80,12 @@ class _LoginScreenState extends State<LoginScreen> {
     );
 
     if (userAuthenticated) {
-      await saveCredentials(); // Guardar o eliminar credenciales según el estado del checkbox
+      await saveCredentials();
 
-      Users? userDetails = await db.getUser(usrName.text);
       if (!mounted) return;
-      Navigator.push(
+      Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => Profile(profile: userDetails)),
+        MaterialPageRoute(builder: (context) => const MainView()),
       );
     } else {
       setState(() {
@@ -110,11 +109,13 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 Text(
                   "Iniciar Sesión",
-                  style: TextStyle(color: primaryColor, fontSize: 30, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: primaryColor,
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 Image.asset("assets/imgDos.png"),
-
-                // PRIMER CAMBIO: puedes intercambiar entre este bloque o el siguiente (según prefieras usar TextField o InputField)
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 1.0),
                   child: TextField(
@@ -159,13 +160,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-
-                // SEGUNDO CAMBIO: esta es la versión que usa el componente personalizado InputField
-                /*
-                InputField(hint: "Usuario", icon: Icons.person, controller: usrName),
-                InputField(hint: "Contraseña", icon: Icons.lock, controller: password, passwordInvisible: true),
-                */
-
                 ListTile(
                   horizontalTitleGap: 2,
                   title: const Text("Recuérdame"),
@@ -192,7 +186,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       },
                       child: Text(
                         "Olvidé mi contraseña",
-                        style: TextStyle(color: primaryColor, fontSize: 15, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          color: primaryColor,
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ],
@@ -213,7 +211,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       },
                       child: Text(
                         "Registrarme",
-                        style: TextStyle(color: primaryColor, fontSize: 15, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          color: primaryColor,
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ],
@@ -221,7 +223,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 if (isLoginError)
                   Text(
                     "Usuario o contraseña incorrectos.",
-                    style: TextStyle(color: Colors.red.shade900, fontSize: 15),
+                    style: TextStyle(
+                      color: Colors.red.shade900,
+                      fontSize: 15,
+                    ),
                   ),
               ],
             ),
