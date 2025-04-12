@@ -80,12 +80,16 @@ class _LoginScreenState extends State<LoginScreen> {
     );
 
     if (userAuthenticated) {
-      await saveCredentials();
+      // Recupera los datos del usuario
+      Users? userDetails = await db.getUser(usrName.text);
+
+      if (userDetails != null) {
+        await saveCredentials();
 
       if (!mounted) return;
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const MainView()),
+        MaterialPageRoute(builder: (context) => MainView(userProfile: userDetails)),
       );
     } else {
       setState(() {
@@ -95,6 +99,7 @@ class _LoginScreenState extends State<LoginScreen> {
         const SnackBar(content: Text('Usuario o contraseña incorrectos')),
       );
     }
+      }
   }
 
   @override
