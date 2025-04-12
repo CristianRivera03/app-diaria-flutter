@@ -1,6 +1,8 @@
+import 'package:diaria/Views/add_contact_screen.dart';
 import 'package:diaria/Views/help_view.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart'; // Importación para selección de imágenes
+import 'package:sqflite/sqflite.dart';
 import 'dart:io'; // Importación para manejar archivos
 import '../Components/button.dart';
 import '../Components/colors.dart';
@@ -91,8 +93,6 @@ class _ProfileState extends State<Profile> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
       appBar: AppBar(
         title: const Text("Gestión de Perfil"),
@@ -190,7 +190,6 @@ class _ProfileState extends State<Profile> {
                 ),
                 ListTile(
                   leading: Icon(Icons.lock, size: 30, color: Theme.of(context).primaryColor),
-
                   subtitle: const Text("Seguridad"),
                   title: const Text("Cambiar Contraseña"),
                   onTap: () {
@@ -198,13 +197,11 @@ class _ProfileState extends State<Profile> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => ChangePasswordScreen(profile: widget.profile!),
-
                       ),
                     );
                   },
                 ),
                 ListTile(
-
                   leading: Icon(Icons.email, size: 30, color: Theme.of(context).primaryColor),
                   subtitle: const Text("Correo Electrónico"),
                   title: Text("${widget.profile?.email}"),
@@ -227,7 +224,6 @@ class _ProfileState extends State<Profile> {
                       MaterialPageRoute(
                         builder: (context) =>
                             UserListScreen(currentUserName: widget.profile?.usrName ?? ""),
-
                       ),
                     );
                   },
@@ -236,13 +232,22 @@ class _ProfileState extends State<Profile> {
                   leading: Icon(Icons.network_check, size: 30, color: Theme.of(context).primaryColor),
                   subtitle: const Text("Estado de Usuarios"),
                   title: const Text("Lista de Estado"),
-
                   onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => const UserStatusListScreen(),
                       ),
+                    );
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.person_add), // Icono representativo
+                  title: const Text("Agregar Contacto"), // Título del ListTile
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const AddContactScreen()), // Navega a AddContactScreen
                     );
                   },
                 ),
@@ -258,6 +263,7 @@ class _ProfileState extends State<Profile> {
       ),
     );
   }
+
   void _showDeleteConfirmationDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -297,15 +303,12 @@ class _ProfileState extends State<Profile> {
     final db = DatabaseHelper();
 
     try {
-
       final String currentUserEmail = widget.profile!.email!;
-
       bool success = await db.deleteUserAccount(currentUserEmail);
 
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Cuenta eliminada con éxito.")),
-
         );
 
         // Redirige al inicio de sesión
@@ -316,17 +319,16 @@ class _ProfileState extends State<Profile> {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-
           const SnackBar(content: Text("Error al eliminar la cuenta. Inténtalo de nuevo.")),
-
         );
       }
     } catch (e) {
       print("Error al eliminar la cuenta: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Ocurrió un error inesperado. Inténtalo más tarde.")),
-
       );
     }
+
   }
+
 }
