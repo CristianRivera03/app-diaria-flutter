@@ -32,6 +32,13 @@ class DatabaseHelper {
   )
   ''';
 
+  final String contactsTable = '''
+CREATE TABLE contacts (
+  contactId INTEGER PRIMARY KEY AUTOINCREMENT,
+  fullName TEXT NOT NULL,
+  contactNumber TEXT NOT NULL
+)
+''';
 
   Future<Database> initDB() async {
     final databasePath = await getDatabasesPath();
@@ -39,17 +46,17 @@ class DatabaseHelper {
 
     return openDatabase(
       path,
-      version: 4, // Incrementamos la versión para la nueva columna "profileImage"
-
+      version: 5, // Incrementamos la versión para la nueva columna "profileImage"
       onCreate: (db, version) async {
         await db.execute(userTable);
         await db.execute(blockedUsersTable);
         await db.execute(verificationCodesTable);
+        await db.execute(contactsTable); // Crear la tabla de contactos
       },
       onUpgrade: (db, oldVersion, newVersion) async {
-
-        if (oldVersion < 4) {
+        if (oldVersion < 5) {
           // Comprobar si la columna 'profileImage' ya existe
+          await db.execute("CREATE TABLE IF NOT EXISTS contacts (contactId INTEGER PRIMARY KEY AUTOINCREMENT, fullName TEXT NOT NULL, contactNumber TEXT NOT NULL);");
           final tableInfo = await db.rawQuery("PRAGMA table_info(users)");
           final hasColumn = tableInfo.any((column) =>
           column['name'] == 'profileImage');
@@ -61,6 +68,7 @@ class DatabaseHelper {
       },
     );
   }
+
   Future<int> createUser(Users usr) async {
     try {
       final Database db = await initDB();
@@ -78,7 +86,6 @@ class DatabaseHelper {
       where: "usrName = ?",
       whereArgs: [usrName],
     );
-
     return res.isNotEmpty ? Users.fromMap(res.first) : null;
   }
 
@@ -136,7 +143,6 @@ class DatabaseHelper {
         where: "usrName = ?",
         whereArgs: [usrName],
       );
-
     } catch (e) {
       print("Error al desbloquear usuario: $e");
       return -1;
@@ -153,7 +159,6 @@ class DatabaseHelper {
     return result.isNotEmpty;
   }
 
-
   Future<bool> resetPassword(String email, String newPassword) async {
     try {
       final Database db = await initDB();
@@ -164,7 +169,6 @@ class DatabaseHelper {
       );
 
       if (user.isNotEmpty) {
-
         await db.update(
           "users",
           {"usrPassword": newPassword},
@@ -193,16 +197,15 @@ class DatabaseHelper {
       );
 
       if (userQuery.isNotEmpty) {
-
         final int rowsAffected = await db.update(
           "users",
           {"usrPassword": newPassword},
           where: "usrName = ?",
           whereArgs: [usrName],
         );
+
         return rowsAffected > 0;
       }
-
 
       return false;
     } catch (e) {
@@ -213,7 +216,6 @@ class DatabaseHelper {
 
   Future<bool> updatePassword(String email, String newPassword) async {
     try {
-
       final Database db = await initDB();
       int rowsAffected = await db.update(
         'users',
@@ -241,9 +243,7 @@ class DatabaseHelper {
     if (result.isNotEmpty) {
       return result.first['code'] as String;
     }
-
     return null;
-
   }
 
   Future<void> storeVerificationCode(String email, String code) async {
@@ -269,7 +269,6 @@ class DatabaseHelper {
       whereArgs: [email],
     );
   }
-
   Future<void> updateProfileImage(String usrName, String imagePath) async {
     try {
       final Database db = await initDB();
@@ -283,17 +282,14 @@ class DatabaseHelper {
       print('Error al actualizar la imagen de perfil: $e');
     }
   }
-
   Future<bool> verifyCode(String email, String enteredCode) async {
     final storedCode = await getVerificationCode(email);
 
     if (storedCode != null && storedCode == enteredCode) {
-
       await deleteVerificationCode(email);
       return true;
     }
     return false;
-
   }
 
   Future<bool> deleteUserAccount(String email) async {
@@ -304,9 +300,7 @@ class DatabaseHelper {
         where: 'email = ?',
         whereArgs: [email],
       );
-
       return rowsDeleted > 0;
-
     } catch (e) {
       print("Error al eliminar el usuario: $e");
       return false;
@@ -317,14 +311,12 @@ class DatabaseHelper {
     try {
       final db = await initDB();
       int rowsAffected = await db.update(
-
         'users',
         {'email': newEmail},
         where: 'email = ?',
         whereArgs: [currentEmail],
       );
       return rowsAffected > 0;
-
     } catch (e) {
       print('Error al actualizar el correo: $e');
       return false;
@@ -339,14 +331,31 @@ class DatabaseHelper {
         where: 'email = ?',
         whereArgs: [email],
       );
-
       return result.isNotEmpty;
-
     } catch (e) {
       print('Error al verificar el correo: $e');
       return false;
     }
   }
-
+  Future<int> addContact(String fullName, String contactNumber) async {
+    try {
+      final Database db = await initDB();
+      return await db.insert(
+        "contacts",
+        {
+          "fullName": fullName,
+          "contactNumber": contactNumber,
+        },
+      );
+    } catch (e) {
+      print("Error al registrar el contacto: $e");
+      return -1;
+    }
+  }
+  Future<void> deleteDatabaseFile(String databaseName) async {
+    final databasePath = await getDatabasesPath();
+    final path = join(databasePath, databaseName);
+    await deleteDatabase(path);
+    print("Base de datos eliminada exitosamente: $path");
+  }
 }
-
