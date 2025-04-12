@@ -1,11 +1,15 @@
 import 'package:diaria/Views/profile.dart';
+import 'package:diaria/Views/viewContactScreen.dart';
 import 'package:flutter/material.dart';
 
+import '../JSON/users.dart';
 import 'add_contact_screen.dart';
 import 'help_view.dart';
 
 class MainView extends StatelessWidget {
-  const MainView({super.key});
+  final Users userProfile; // Recibe el perfil del usuario
+
+  const MainView({super.key, required this.userProfile}); // Constructor actualizado
 
   @override
   Widget build(BuildContext context) {
@@ -18,10 +22,13 @@ class MainView extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.account_circle, size: 32),
             onPressed: () {
+              // Navegar al perfil pasando el objeto userProfile
               Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const Profile()),
-            );
+                context,
+                MaterialPageRoute(
+                  builder: (context) => Profile(profile: userProfile),
+                ),
+              );
             },
           ),
         ],
@@ -41,8 +48,13 @@ class MainView extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             CustomMainButton(
-              text: 'Lorem',
-              onPressed: () {},
+              text: 'Ver contactos',
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const ViewContactScreen()),
+                );
+              },
             ),
             const SizedBox(height: 20),
             CustomMainButton(
