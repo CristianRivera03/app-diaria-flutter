@@ -9,7 +9,7 @@ class AuthScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final theme = Theme.of(context); // Obtener el tema
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -53,8 +53,7 @@ class AuthScreen extends StatelessWidget {
                       ),
                     ),
                     Expanded(child: Image.asset("assets/imgUno.png")),
-
-                    // botón de iniciar sesión
+                    // botones con el color del tema
                     Button(
                       label: "Iniciar Sesión",
                       press: () {
@@ -66,16 +65,12 @@ class AuthScreen extends StatelessWidget {
                       color: theme.primaryColor,
                       textColor: theme.textTheme.bodyLarge?.color,
                     ),
-
-                    // botón de registro
                     Button(
                       label: "Registrarse",
                       press: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(
-                            builder: (context) => const SignUpScreen(),
-                          ),
+                          MaterialPageRoute(builder: (context) => const SignUpScreen()),
                         );
                       },
                       color: theme.primaryColor,

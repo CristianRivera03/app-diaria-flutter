@@ -1,31 +1,42 @@
 import 'package:flutter/material.dart';
-
-import '../Components/colors.dart';
+import 'package:provider/provider.dart';
+import '../Services/theme_manager.dart';
 
 class HelpView extends StatelessWidget {
   const HelpView({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // Obtener el tema actual desde ThemeManager
+    final themeManager = Provider.of<ThemeManager>(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Ayuda" , style: TextStyle(color: Colors.white , fontSize: 20 , fontWeight: FontWeight.bold)),
-        backgroundColor: primaryColor,
+        title: const Text(
+          "Ayuda",
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: themeManager.primaryColor, // Usar color primario desde ThemeManager
+        foregroundColor: themeManager.textColor, // Usar color de texto desde ThemeManager
       ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
+            children: [
               Text(
                 "¿Cómo usar esta aplicación?",
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
+                  color: themeManager.textColor, // Usar color de texto desde ThemeManager
                 ),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               Text(
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit. "
                     "Vestibulum viverra urna et nulla feugiat, ac vulputate augue scelerisque. "
@@ -36,17 +47,19 @@ class HelpView extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 16,
                   height: 1.6,
+                  color: themeManager.textColor, // Usar color de texto desde ThemeManager
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Text(
                 "¿Tienes problemas con tu cuenta?",
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
+                  color: themeManager.textColor, // Usar color de texto desde ThemeManager
                 ),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               Text(
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus non justo lectus. "
                     "Mauris at augue eu nisi ullamcorper vulputate. Fusce mollis nisl quis urna auctor, id suscipit odio "
@@ -54,14 +67,16 @@ class HelpView extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 16,
                   height: 1.6,
+                  color: themeManager.textColor, // Usar color de texto desde ThemeManager
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Text(
                 "Si necesitas más ayuda, no dudes en contactarnos.",
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
+                  color: themeManager.textColor, // Usar color de texto desde ThemeManager
                 ),
               ),
             ],

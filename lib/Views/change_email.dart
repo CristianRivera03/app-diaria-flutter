@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../Components/button.dart';
-import '../Components/colors.dart';
 import '../SQLite/database_helper.dart';
 import '../JSON/users.dart';
 
@@ -54,8 +53,6 @@ class _ChangeEmailScreenState extends State<ChangeEmailScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Correo actualizado con éxito')),
         );
-
-        // Regresa con el nuevo correo actualizado
         Navigator.pop(context, newEmail);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -72,10 +69,12 @@ class _ChangeEmailScreenState extends State<ChangeEmailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context); // Obtener el tema
+
     return Scaffold(
       appBar: AppBar(
         title: Text("Cambiar Correo Electrónico"),
-        backgroundColor: primaryColor,
+        backgroundColor: theme.primaryColor,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -84,7 +83,7 @@ class _ChangeEmailScreenState extends State<ChangeEmailScreen> {
           children: [
             Text(
               "Introduce tu nuevo correo electrónico",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: primaryColor),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: theme.primaryColor),
             ),
             SizedBox(height: 20),
             TextField(
@@ -93,18 +92,20 @@ class _ChangeEmailScreenState extends State<ChangeEmailScreen> {
               decoration: InputDecoration(
                 labelText: "Nuevo Correo Electrónico",
                 border: OutlineInputBorder(),
+                labelStyle: TextStyle(color: theme.primaryColor), // Color del texto
               ),
             ),
             SizedBox(height: 20),
             Button(
               label: "Actualizar Correo",
               press: _updateEmail,
+              color: theme.primaryColor,
             ),
             TextButton(
               onPressed: () {
                 Navigator.pop(context); // Cancelar y regresar a perfil
               },
-              child: Text("Cancelar", style: TextStyle(color: Colors.grey)),
+              child: Text("Cancelar", style: TextStyle(color: theme.textTheme.bodyMedium?.color)),
             ),
           ],
         ),

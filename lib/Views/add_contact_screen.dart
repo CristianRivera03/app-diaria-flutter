@@ -23,13 +23,13 @@ class _AddContactScreenState extends State<AddContactScreen> {
         );
         if (result > 0) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Contacto agregado exitosamente.")),
+            const SnackBar(content: Text("Cliente agregado exitosamente.")),
           );
           _fullNameController.clear();
           _contactNumberController.clear();
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Error al agregar el contacto.")),
+            const SnackBar(content: Text("Error al agregar el cliente.")),
           );
         }
       } catch (e) {
@@ -44,7 +44,7 @@ class _AddContactScreenState extends State<AddContactScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Agregar Contacto"),
+        title: const Text("Agregar Cliente"),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -70,13 +70,13 @@ class _AddContactScreenState extends State<AddContactScreen> {
               TextFormField(
                 controller: _contactNumberController,
                 decoration: const InputDecoration(
-                  labelText: "Número de Contacto",
+                  labelText: "Número de Cliente",
                   border: OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.phone,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return "Por favor ingresa un número de contacto.";
+                    return "Por favor ingresa un número de cliente.";
                   }
                   if (value.length < 8) {
                     return "El número debe tener al menos 8 dígitos.";
@@ -87,7 +87,15 @@ class _AddContactScreenState extends State<AddContactScreen> {
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _addContact,
-                child: const Text("Registrar Contacto"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).primaryColor, // Usar el color principal del tema
+                ),
+                child: Text(
+                  "Registrar Cliente",
+                  style: TextStyle(
+                    color: Theme.of(context).textTheme.bodyLarge?.color, // Usar el color de texto del tema
+                  ),
+                ),
               ),
             ],
           ),
@@ -103,4 +111,3 @@ class _AddContactScreenState extends State<AddContactScreen> {
     super.dispose();
   }
 }
-
