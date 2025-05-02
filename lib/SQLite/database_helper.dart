@@ -40,6 +40,14 @@ CREATE TABLE contacts (
 )
 ''';
 
+  final String salesTable = '''
+CREATE TABLE sales (
+  saleId INTEGER PRIMARY KEY AUTOINCREMENT,
+  productName TEXT NOT NULL,
+  totalPrice REAL NOT NULL
+)
+''';
+
 
   Future<Database> initDB() async {
     final databasePath = await getDatabasesPath();
@@ -53,6 +61,7 @@ CREATE TABLE contacts (
         await db.execute(blockedUsersTable);
         await db.execute(verificationCodesTable);
         await db.execute(contactsTable); // Crear la tabla de contactos
+        await db.execute(salesTable); // Crear la tabla de ventas
       },
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 5) {
@@ -64,10 +73,49 @@ CREATE TABLE contacts (
 
           if (!hasColumn) {
             await db.execute("ALTER TABLE users ADD COLUMN profileImage TEXT;");
+            await db.execute("CREATE TABLE IF NOT EXISTS sales (saleId INTEGER PRIMARY KEY AUTOINCREMENT, productName TEXT NOT NULL, totalPrice REAL NOT NULL);");
           }
         }
       },
     );
+  }
+
+  // Obtener todas las ventas
+  Future<List<Map<String, dynamic>>> getAllSales() async {
+    final db = await initDB();
+    return await db.query("sales");
+  }
+
+// Agregar una nueva venta
+  Future<int> addSale(String productName, double totalPrice) async {
+    try {
+      final db = await initDB();
+      return await db.insert(
+        "sales",
+        {
+          "productName": productName,
+          "totalPrice": totalPrice,
+        },
+      );
+    } catch (e) {
+      print("Error al registrar la venta: $e");
+      return -1;
+    }
+  }
+
+// Eliminar una venta
+  Future<int> deleteSale(int saleId) async {
+    try {
+      final db = await initDB();
+      return await db.delete(
+        "sales",
+        where: "saleId = ?",
+        whereArgs: [saleId],
+      );
+    } catch (e) {
+      print("Error al eliminar la venta: $e");
+      return -1;
+    }
   }
 
   Future<int> createUser(Users usr) async {

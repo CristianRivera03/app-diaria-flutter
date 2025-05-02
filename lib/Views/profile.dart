@@ -256,6 +256,16 @@ class _ProfileState extends State<Profile> {
                   label: "Eliminar Cuenta",
                   press: () => _showDeleteConfirmationDialog(context),
                 ),
+                ListTile(
+                  leading: const Icon(Icons.delete),
+                  title: const Text("Eliminar Base de Datos"),
+                  onTap: () async {
+                    await deleteDatabase("diaria.db");
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Base de datos eliminada exitosamente.")),
+                    );
+                  },
+                ),
               ],
             ),
           ),
@@ -330,5 +340,6 @@ class _ProfileState extends State<Profile> {
     }
 
   }
+
 
 }

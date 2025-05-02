@@ -1,5 +1,6 @@
 import 'package:diaria/Views/profile.dart';
 import 'package:diaria/Views/viewContactScreen.dart';
+import 'package:diaria/Views/viewSalesScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart'; // Asegúrate de importar Provider
 
@@ -58,6 +59,16 @@ class MainView extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const ViewContactScreen()),
+                );
+              },
+            ),
+            const SizedBox(height: 20),
+            CustomMainButton(
+              text: 'Visualizar Ventas',
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ViewSalesScreen()),
                 );
               },
             ),
