@@ -18,9 +18,10 @@ class _ViewSalesScreenState extends State<ViewSalesScreen> {
     _loadSales(); // Cargar ventas al iniciar la pantalla
   }
 
+  // Cargar las ventas desde la base de datos
   Future<void> _loadSales() async {
     try {
-      final List<Map<String, dynamic>> result = await dbHelper.getAllSales(); // Ajusta según tu base de datos
+      final List<Map<String, dynamic>> result = await dbHelper.getAllVentas();
       setState(() {
         sales = result; // Asigna las ventas recuperadas
       });
@@ -48,35 +49,39 @@ class _ViewSalesScreenState extends State<ViewSalesScreen> {
         itemCount: sales.length,
         itemBuilder: (context, index) {
           final sale = sales[index];
-          return ListTile(
-            title: Text("Producto: ${sale['productName']}"),
-            subtitle: Text("Total: \$${sale['totalPrice']}"),
-            trailing: IconButton(
-              icon: const Icon(Icons.delete, color: Colors.red),
-              onPressed: () async {
-                final confirm = await showDialog<bool>(
-                  context: context,
-                  builder: (ctx) => AlertDialog(
-                    title: const Text("¿Eliminar venta?"),
-                    content: const Text("¿Estás seguro de que quieres eliminar esta venta?"),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(ctx).pop(false),
-                        child: const Text("Cancelar"),
-                      ),
-                      TextButton(
-                        onPressed: () => Navigator.of(ctx).pop(true),
-                        child: const Text("Eliminar"),
-                      ),
-                    ],
-                  ),
-                );
+          return Card(
+            margin: const EdgeInsets.symmetric(vertical: 8),
+            child: ListTile(
+              title: Text("Cliente: ${sale['nombreCliente']}"),
+              subtitle: Text(
+                  "Número: ${sale['numeroComprado']} - \$${sale['precioComprado'].toStringAsFixed(2)}"),
+              trailing: IconButton(
+                icon: const Icon(Icons.delete, color: Colors.red),
+                onPressed: () async {
+                  final confirm = await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: const Text("¿Eliminar venta?"),
+                      content: const Text("¿Estás seguro de que quieres eliminar esta venta?"),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(ctx).pop(false),
+                          child: const Text("Cancelar"),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.of(ctx).pop(true),
+                          child: const Text("Eliminar"),
+                        ),
+                      ],
+                    ),
+                  );
 
-                if (confirm == true) {
-                  await dbHelper.deleteSale(sale['saleId']);
-                  _loadSales(); // Recargar la lista de ventas
-                }
-              },
+                  if (confirm == true) {
+                    await dbHelper.deleteSale(sale['idventa']); // Usamos el id de la venta
+                    _loadSales(); // Recargar la lista de ventas
+                  }
+                },
+              ),
             ),
           );
         },
