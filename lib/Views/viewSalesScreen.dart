@@ -18,9 +18,11 @@ class _ViewSalesScreenState extends State<ViewSalesScreen> {
     _loadSales();
   }
 
+  // Cargar las ventas desde la base de datos
   Future<void> _loadSales() async {
     try {
       final result = await dbHelper.getAllVentas();
+
       setState(() {
         sales = result;
       });
@@ -95,6 +97,7 @@ class _ViewSalesScreenState extends State<ViewSalesScreen> {
             margin: const EdgeInsets.symmetric(vertical: 8),
             child: ListTile(
               title: Text("Cliente: ${sale['nombreCliente']}"),
+
               subtitle: Text("Número: ${sale['numeroComprado']} - \$${sale['precioComprado'].toStringAsFixed(2)}"),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -125,6 +128,7 @@ class _ViewSalesScreenState extends State<ViewSalesScreen> {
                     },
                   ),
                 ],
+
               ),
             ),
           );
