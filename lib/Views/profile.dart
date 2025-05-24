@@ -1,5 +1,6 @@
 import 'package:diaria/Views/add_contact_screen.dart';
 import 'package:diaria/Views/help_view.dart';
+import 'package:diaria/Views/notifications_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart'; // Importación para selección de imágenes
 import 'package:sqflite/sqflite.dart';
@@ -263,6 +264,19 @@ class _ProfileState extends State<Profile> {
                     await deleteDatabase("diaria.db");
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text("Base de datos eliminada exitosamente.")),
+                    );
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.notifications),
+                  title: const Text("Activar Recordatorios de Juego"),
+                  onTap: () async {
+                    await scheduleNotification(1, "¡Hora de prepararse!", "Falta menos de una hora para la jornada de juego a las 11:00.", 11);
+                    await scheduleNotification(2, "¡Hora de prepararse!", "Falta menos de una hora para la jornada de juego a las 15:00.", 15);
+                    await scheduleNotification(3, "¡Hora de prepararse!", "Falta menos de una hora para la jornada de juego a las 21:00.", 21);
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Notificaciones programadas exitosamente.")),
                     );
                   },
                 ),

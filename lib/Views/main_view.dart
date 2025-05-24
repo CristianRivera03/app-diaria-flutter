@@ -1,3 +1,4 @@
+import 'package:diaria/Views/AddSaleScreen.dart';
 import 'package:diaria/Views/profile.dart';
 import 'package:diaria/Views/viewContactScreen.dart';
 import 'package:diaria/Views/viewSalesScreen.dart';
@@ -74,8 +75,15 @@ class MainView extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             CustomMainButton(
-              text: 'Lorem',
-              onPressed: () {},
+              text: 'Registrar Venta',
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AddSaleScreen()),
+                );
+              },
+
+
             ),
           ],
         ),

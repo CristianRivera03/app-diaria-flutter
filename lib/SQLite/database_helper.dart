@@ -41,10 +41,11 @@ CREATE TABLE contacts (
 ''';
 
   final String salesTable = '''
-CREATE TABLE sales (
-  saleId INTEGER PRIMARY KEY AUTOINCREMENT,
-  productName TEXT NOT NULL,
-  totalPrice REAL NOT NULL
+CREATE TABLE ventas (
+  idventa INTEGER PRIMARY KEY AUTOINCREMENT,
+  nombreCliente TEXT NOT NULL,
+  numeroComprado INTEGER NOT NULL,
+  precioComprado REAL NOT NULL
 )
 ''';
 
@@ -81,20 +82,21 @@ CREATE TABLE sales (
   }
 
   // Obtener todas las ventas
-  Future<List<Map<String, dynamic>>> getAllSales() async {
+  Future<List<Map<String, dynamic>>> getAllVentas() async {
     final db = await initDB();
-    return await db.query("sales");
+    return await db.query("ventas");
   }
 
 // Agregar una nueva venta
-  Future<int> addSale(String productName, double totalPrice) async {
+  Future<int> addSale(String nombreCliente, int numeroComprado, double precioComprado) async {
     try {
       final db = await initDB();
       return await db.insert(
-        "sales",
+        "ventas",
         {
-          "productName": productName,
-          "totalPrice": totalPrice,
+          "nombreCliente": nombreCliente,
+          "numeroComprado": numeroComprado,
+          "precioComprado": precioComprado,
         },
       );
     } catch (e) {
@@ -104,19 +106,58 @@ CREATE TABLE sales (
   }
 
 // Eliminar una venta
-  Future<int> deleteSale(int saleId) async {
+  Future<int> deleteSale(int idventa) async {
     try {
       final db = await initDB();
       return await db.delete(
-        "sales",
-        where: "saleId = ?",
-        whereArgs: [saleId],
+        "ventas",
+        where: "idventa = ?",
+        whereArgs: [idventa],
       );
     } catch (e) {
       print("Error al eliminar la venta: $e");
       return -1;
     }
   }
+
+// Actualizar una venta
+  Future<int> updateSale(int idventa, String nombreCliente, int numeroComprado, double precioComprado) async {
+    try {
+      final db = await initDB();
+      return await db.update(
+        "ventas",
+        {
+          "nombreCliente": nombreCliente,
+          "numeroComprado": numeroComprado,
+          "precioComprado": precioComprado,
+        },
+        where: "idventa = ?",
+        whereArgs: [idventa],
+      );
+    } catch (e) {
+      print("Error al actualizar la venta: $e");
+      return -1;
+    }
+  }
+
+
+// Obtener una venta por su ID
+  Future<Map<String, dynamic>?> getVentaById(int idventa) async {
+    final db = await initDB();
+    final res = await db.query(
+      "ventas",
+      where: "idventa = ?",
+      whereArgs: [idventa],
+    );
+    return res.isNotEmpty ? res.first : null;
+  }
+
+
+
+
+
+
+
 
   Future<int> createUser(Users usr) async {
     try {
