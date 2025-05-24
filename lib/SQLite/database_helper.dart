@@ -45,7 +45,8 @@ CREATE TABLE ventas (
   idventa INTEGER PRIMARY KEY AUTOINCREMENT,
   nombreCliente TEXT NOT NULL,
   numeroComprado INTEGER NOT NULL,
-  precioComprado REAL NOT NULL
+  precioComprado REAL NOT NULL,
+  nota TEXT
 )
 ''';
 
@@ -87,8 +88,13 @@ CREATE TABLE ventas (
     return await db.query("ventas");
   }
 
-// Agregar una nueva venta
-  Future<int> addSale(String nombreCliente, int numeroComprado, double precioComprado) async {
+// Agregar una nueva venta (ahora con nota opcional)
+  Future<int> addSale(
+      String nombreCliente,
+      int numeroComprado,
+      double precioComprado, {
+        String nota = '',
+      }) async {
     try {
       final db = await initDB();
       return await db.insert(
@@ -97,6 +103,7 @@ CREATE TABLE ventas (
           "nombreCliente": nombreCliente,
           "numeroComprado": numeroComprado,
           "precioComprado": precioComprado,
+          "nota": nota,                   // ← nueva columna
         },
       );
     } catch (e) {
@@ -120,8 +127,14 @@ CREATE TABLE ventas (
     }
   }
 
-// Actualizar una venta
-  Future<int> updateSale(int idventa, String nombreCliente, int numeroComprado, double precioComprado) async {
+// Actualizar una venta (ahora también nota)
+  Future<int> updateSale(
+      int idventa,
+      String nombreCliente,
+      int numeroComprado,
+      double precioComprado,
+      String nota,
+      ) async {
     try {
       final db = await initDB();
       return await db.update(
@@ -130,6 +143,7 @@ CREATE TABLE ventas (
           "nombreCliente": nombreCliente,
           "numeroComprado": numeroComprado,
           "precioComprado": precioComprado,
+          "nota": nota,                   // ← incluir nota
         },
         where: "idventa = ?",
         whereArgs: [idventa],
@@ -140,8 +154,7 @@ CREATE TABLE ventas (
     }
   }
 
-
-// Obtener una venta por su ID
+// Obtener una venta por su ID (incluye nota)
   Future<Map<String, dynamic>?> getVentaById(int idventa) async {
     final db = await initDB();
     final res = await db.query(
@@ -151,6 +164,10 @@ CREATE TABLE ventas (
     );
     return res.isNotEmpty ? res.first : null;
   }
+
+
+
+
 
 
 
