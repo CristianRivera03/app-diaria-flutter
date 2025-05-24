@@ -2,6 +2,7 @@ import 'package:diaria/Views/AddSaleScreen.dart';
 import 'package:diaria/Views/profile.dart';
 import 'package:diaria/Views/viewContactScreen.dart';
 import 'package:diaria/Views/viewSalesScreen.dart';
+import 'package:diaria/Views/WinnerScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart'; // Asegúrate de importar Provider
 
@@ -82,9 +83,21 @@ class MainView extends StatelessWidget {
                   MaterialPageRoute(builder: (context) => const AddSaleScreen()),
                 );
               },
-
-
             ),
+
+            const SizedBox(height: 20),
+            CustomMainButton(
+              text: 'Ver ganador',
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const WinnerScreen()),
+                );
+              },
+            ),
+
+
+
           ],
         ),
       ),

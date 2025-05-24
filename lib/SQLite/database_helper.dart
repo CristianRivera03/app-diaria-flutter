@@ -486,4 +486,17 @@ CREATE TABLE ventas (
     await deleteDatabase(path);
     print("Base de datos eliminada exitosamente: $path");
   }
+
+
+  Future<List<Map<String, dynamic>>> getWinnersByNumber(String number) async {
+    final db = await initDB();
+    return await db.query(
+      "ventas",
+      where: "numeroComprado = ?",
+      whereArgs: [number],
+        orderBy: "precioComprado DESC",
+    );
+  }
 }
+
+
