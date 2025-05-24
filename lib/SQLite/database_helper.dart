@@ -497,6 +497,12 @@ CREATE TABLE ventas (
         orderBy: "precioComprado DESC",
     );
   }
+
+
+  Future<int> deleteAllVentas() async {
+    final db = await initDB();
+    return await db.delete('ventas');
+  }
 }
 
 
