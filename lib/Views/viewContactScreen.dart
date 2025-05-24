@@ -10,20 +10,35 @@ class ViewContactScreen extends StatefulWidget {
 }
 
 class _ViewContactScreenState extends State<ViewContactScreen> {
-  final dbHelper = DatabaseHelper(); // instancia del helper para la base de datos
-  List<Map<String, dynamic>> contacts = []; // lista de contactos
+  final dbHelper = DatabaseHelper();
+  List<Map<String, dynamic>> contacts = [];
+
+  // Controlador y término de búsqueda
+  final TextEditingController _searchController = TextEditingController();
+  String _searchTerm = '';
 
   @override
   void initState() {
     super.initState();
-    _loadContacts(); // cargar contactos al iniciar la pantalla
+    _loadContacts();
+    _searchController.addListener(() {
+      setState(() {
+        _searchTerm = _searchController.text.trim().toLowerCase();
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadContacts() async {
     try {
-      final List<Map<String, dynamic>> result = await dbHelper.getAllContacts();
+      final result = await dbHelper.getAllContacts();
       setState(() {
-        contacts = result; // asigna los contactos recuperados
+        contacts = result;
       });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -34,86 +49,113 @@ class _ViewContactScreenState extends State<ViewContactScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Filtrar contactos por búsqueda (nombre o número)
+    final filteredContacts = contacts.where((c) {
+      final name = (c['fullName'] ?? '').toString().toLowerCase();
+      final number = (c['contactNumber'] ?? '').toString().toLowerCase();
+      return name.contains(_searchTerm) || number.contains(_searchTerm);
+    }).toList();
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Clientes"),
       ),
-      body: contacts.isEmpty
-          ? const Center(
-        child: Text(
-          "No hay clientes disponibles.",
-          style: TextStyle(fontSize: 18),
-        ),
-      )
-          : ListView.builder(
-        itemCount: contacts.length,
-        itemBuilder: (context, index) {
-          final contact = contacts[index];
-          return ListTile(
-            title: Text(contact['fullName']),
-            subtitle: Text(contact['contactNumber']),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Botón para eliminar contacto
-                IconButton(
-                  icon: Icon(Icons.delete, color: Colors.red),
-                  onPressed: () async {
-                    final confirm = await showDialog<bool>(
-                      context: context,
-                      builder: (ctx) => AlertDialog(
-                        title: Text("¿Eliminar cliente?"),
-                        content: Text(
-                            "¿Estás seguro de que quieres eliminar este cliente?"),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(ctx).pop(false),
-                            child: Text("Cancelar"),
-                          ),
-                          TextButton(
-                            onPressed: () => Navigator.of(ctx).pop(true),
-                            child: Text("Eliminar"),
-                          ),
-                        ],
-                      ),
-                    );
-
-                    if (confirm == true) {
-                      await dbHelper.deleteContact(contact['contactId']);
-                      _loadContacts(); // recarga la lista de contactos
-                    }
-                  },
-                ),
-                // Botón para editar contacto
-                IconButton(
-                  icon: Icon(Icons.edit, color: Colors.blue),
-                  onPressed: () async {
-                    // Navegar a la pantalla de edición y esperar el resultado
-                    final updated = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => EditContactScreen(contact: contact),
-                      ),
-                    );
-
-                    // Si se ha editado el contacto, recargar la lista de contactos
-                    if (updated == true) {
-                      _loadContacts(); // recarga la lista después de editar
-                    }
-                  },
-                ),
-              ],
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            // Buscador
+            TextField(
+              controller: _searchController,
+              decoration: const InputDecoration(
+                labelText: "Buscar por nombre o número",
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(),
+                isDense: true,
+              ),
             ),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ContactDetailScreen(contact: contact),
+            const SizedBox(height: 16),
+
+            // Lista de contactos (filtrada)
+            Expanded(
+              child: filteredContacts.isEmpty
+                  ? const Center(
+                child: Text(
+                  "No hay clientes para mostrar.",
+                  style: TextStyle(fontSize: 18),
                 ),
-              );
-            },
-          );
-        },
+              )
+                  : ListView.builder(
+                itemCount: filteredContacts.length,
+                itemBuilder: (context, index) {
+                  final contact = filteredContacts[index];
+                  return ListTile(
+                    title: Text(contact['fullName']),
+                    subtitle: Text(contact['contactNumber']),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Eliminar
+                        IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          onPressed: () async {
+                            final confirm = await showDialog<bool>(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                title: const Text("¿Eliminar cliente?"),
+                                content: const Text(
+                                    "¿Estás seguro de que quieres eliminar este cliente?"),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.of(ctx).pop(false),
+                                    child: const Text("Cancelar"),
+                                  ),
+                                  TextButton(
+                                    onPressed: () => Navigator.of(ctx).pop(true),
+                                    child: const Text("Eliminar"),
+                                  ),
+                                ],
+                              ),
+                            );
+                            if (confirm == true) {
+                              await dbHelper.deleteContact(contact['contactId']);
+                              _loadContacts();
+                            }
+                          },
+                        ),
+                        // Editar
+                        IconButton(
+                          icon: const Icon(Icons.edit, color: Colors.blue),
+                          onPressed: () async {
+                            final updated = await Navigator.push<bool>(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    EditContactScreen(contact: contact),
+                              ),
+                            );
+                            if (updated == true) {
+                              _loadContacts();
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              ContactDetailScreen(contact: contact),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -169,7 +211,8 @@ class _EditContactScreenState extends State<EditContactScreen> {
   void initState() {
     super.initState();
     fullNameController = TextEditingController(text: widget.contact['fullName']);
-    contactNumberController = TextEditingController(text: widget.contact['contactNumber']);
+    contactNumberController =
+        TextEditingController(text: widget.contact['contactNumber']);
   }
 
   @override
@@ -182,14 +225,14 @@ class _EditContactScreenState extends State<EditContactScreen> {
   Future<void> _updateContact() async {
     try {
       await dbHelper.updateContact(
-        widget.contact['contactId'], // ID del contacto que se va a modificar
+        widget.contact['contactId'],
         fullNameController.text,
         contactNumberController.text,
       );
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Cliente actualizado exitosamente")),
       );
-      Navigator.pop(context, true); // Regresar a la pantalla anterior y pasar 'true' indicando que se actualizó
+      Navigator.pop(context, true);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error al actualizar cliente: ${e.toString()}")),

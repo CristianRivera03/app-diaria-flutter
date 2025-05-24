@@ -12,22 +12,28 @@ class _ViewSalesScreenState extends State<ViewSalesScreen> {
   final dbHelper = DatabaseHelper();
   List<Map<String, dynamic>> sales = [];
 
-  // Controlador para el input de porcentaje dinámico
+  // Controladores
   final TextEditingController _commissionController =
   TextEditingController(text: '10');
+  final TextEditingController _searchController = TextEditingController();
 
   double get _commissionPercent =>
       double.tryParse(_commissionController.text) ?? 0.0;
+  String _searchTerm = '';
 
   @override
   void initState() {
     super.initState();
     _loadSales();
+    _searchController.addListener(() {
+      setState(() => _searchTerm = _searchController.text.trim());
+    });
   }
 
   @override
   void dispose() {
     _commissionController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -73,34 +79,51 @@ class _ViewSalesScreenState extends State<ViewSalesScreen> {
   }
 
   void _showEditDialog(Map<String, dynamic> sale) {
-    final nombreController = TextEditingController(text: sale['nombreCliente']);
-    final numeroController =
-    TextEditingController(text: sale['numeroComprado'].toString());
+    final nombreController =
+    TextEditingController(text: sale['nombreCliente']);
+    final numeroController = TextEditingController(
+        text: sale['numeroComprado'].toString());
     final precioController =
     TextEditingController(text: sale['precioComprado'].toString());
+    final notaController =
+    TextEditingController(text: sale['nota'] ?? '');
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text("Editar Venta"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nombreController,
-              decoration: const InputDecoration(labelText: "Nombre del Cliente"),
-            ),
-            TextField(
-              controller: numeroController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: "Número Comprado"),
-            ),
-            TextField(
-              controller: precioController,
-              keyboardType: TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(labelText: "Precio Comprado"),
-            ),
-          ],
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nombreController,
+                decoration:
+                const InputDecoration(labelText: "Nombre del Cliente"),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: numeroController,
+                keyboardType: TextInputType.number,
+                decoration:
+                const InputDecoration(labelText: "Número Comprado"),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: precioController,
+                keyboardType:
+                TextInputType.numberWithOptions(decimal: true),
+                decoration:
+                const InputDecoration(labelText: "Precio Comprado"),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: notaController,
+                decoration: const InputDecoration(labelText: "Nota"),
+                maxLines: 2,
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -109,17 +132,14 @@ class _ViewSalesScreenState extends State<ViewSalesScreen> {
           ),
           TextButton(
             onPressed: () async {
-              final updatedNombre = nombreController.text;
-              final updatedNumero =
-                  int.tryParse(numeroController.text) ?? sale['numeroComprado'];
-              final updatedPrecio = double.tryParse(precioController.text) ??
-                  sale['precioComprado'];
-
               await dbHelper.updateSale(
                 sale['idventa'],
-                updatedNombre,
-                updatedNumero,
-                updatedPrecio,
+                nombreController.text,
+                int.tryParse(numeroController.text) ??
+                    sale['numeroComprado'],
+                double.tryParse(precioController.text) ??
+                    sale['precioComprado'],
+                notaController.text,
               );
               await _loadSales();
               Navigator.pop(context);
@@ -133,13 +153,19 @@ class _ViewSalesScreenState extends State<ViewSalesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Calcular el total de todas las ventas
-    final double totalSales = sales.fold<double>(
-      0.0,
-          (sum, sale) => sum + (sale['precioComprado'] as double),
-    );
-    // Calcular la ganancia sobre el total
-    final double totalProfit = totalSales * (_commissionPercent / 100);
+    // Filtrar ventas por término de búsqueda
+    final filteredSales = sales.where((sale) {
+      final name =
+      (sale['nombreCliente'] ?? '').toString().toLowerCase();
+      final number = sale['numeroComprado'].toString();
+      final term = _searchTerm.toLowerCase();
+      return name.contains(term) || number.contains(term);
+    }).toList();
+
+    // Calcular totales
+    final totalSales = filteredSales.fold<double>(
+        0.0, (sum, sale) => sum + (sale['precioComprado'] as double));
+    final totalProfit = totalSales * (_commissionPercent / 100);
 
     return Scaffold(
       appBar: AppBar(
@@ -156,7 +182,18 @@ class _ViewSalesScreenState extends State<ViewSalesScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // Input dinámico de porcentaje
+            // Buscador
+            TextField(
+              controller: _searchController,
+              decoration: const InputDecoration(
+                labelText: "Buscar por número o cliente",
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Input dinámico de comisión
             Row(
               children: [
                 const Text("Comisión (%): "),
@@ -178,86 +215,128 @@ class _ViewSalesScreenState extends State<ViewSalesScreen> {
                 ),
               ],
             ),
-
             const SizedBox(height: 16),
 
-            // Resumen: total ventas y ganancia
+            // Resumen
             Card(
               color: Colors.blue.shade50,
               margin: EdgeInsets.zero,
               child: Padding(
                 padding: const EdgeInsets.all(12.0),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment:
+                  MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       "Total ventas: \$${totalSales.toStringAsFixed(2)}",
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+                      style:
+                      const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     Text(
                       "Ganancia: \$${totalProfit.toStringAsFixed(2)}",
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+                      style:
+                      const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
               ),
             ),
-
             const SizedBox(height: 16),
 
-            // Lista de ventas
+            // Lista filtrada
             Expanded(
-              child: sales.isEmpty
+              child: filteredSales.isEmpty
                   ? const Center(
                 child: Text(
-                  "No hay ventas disponibles.",
+                  "No hay ventas para mostrar.",
                   style: TextStyle(fontSize: 18),
                 ),
               )
                   : ListView.builder(
-                itemCount: sales.length,
+                itemCount: filteredSales.length,
                 itemBuilder: (context, index) {
-                  final sale = sales[index];
-                  final price = sale['precioComprado'] as double;
+                  final sale = filteredSales[index];
+                  final price =
+                  sale['precioComprado'] as double;
                   return Card(
-                    margin: const EdgeInsets.symmetric(vertical: 6),
+                    margin: const EdgeInsets.symmetric(
+                        vertical: 6),
                     child: ListTile(
-                      title: Text("Cliente: ${sale['nombreCliente']}"),
-                      subtitle: Text(
-                        "Número: ${sale['numeroComprado']}  •  \$${price.toStringAsFixed(2)}",
+                      title: Text(
+                          "Cliente: ${sale['nombreCliente']}"),
+                      subtitle: Column(
+                        crossAxisAlignment:
+                        CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Número: ${sale['numeroComprado']}  •  \$${price.toStringAsFixed(2)}",
+                          ),
+                          if ((sale['nota'] ?? '')
+                              .isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets
+                                  .only(top: 4.0),
+                              child: Text(
+                                "Nota: ${sale['nota']}",
+                                style: const TextStyle(
+                                  fontStyle:
+                                  FontStyle.italic,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                       trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
+                        mainAxisSize:
+                        MainAxisSize.min,
                         children: [
                           IconButton(
-                            icon: const Icon(Icons.edit, color: Colors.blue),
-                            onPressed: () => _showEditDialog(sale),
+                            icon: const Icon(Icons.edit,
+                                color: Colors.blue),
+                            onPressed: () =>
+                                _showEditDialog(sale),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.delete, color: Colors.red),
+                            icon: const Icon(Icons.delete,
+                                color: Colors.red),
                             onPressed: () async {
-                              final confirm = await showDialog<bool>(
+                              final confirm =
+                              await showDialog<bool>(
                                 context: context,
                                 builder: (ctx) => AlertDialog(
-                                  title: const Text("¿Eliminar venta?"),
-                                  content: const Text(
+                                  title: const Text(
+                                      "¿Eliminar venta?"),
+                                  content:
+                                  const Text(
                                       "¿Estás seguro de que quieres eliminar esta venta?"),
                                   actions: [
                                     TextButton(
                                       onPressed: () =>
-                                          Navigator.of(ctx).pop(false),
-                                      child: const Text("Cancelar"),
+                                          Navigator.of(
+                                              ctx)
+                                              .pop(
+                                              false),
+                                      child: const Text(
+                                          "Cancelar"),
                                     ),
                                     TextButton(
                                       onPressed: () =>
-                                          Navigator.of(ctx).pop(true),
-                                      child: const Text("Eliminar"),
+                                          Navigator.of(
+                                              ctx)
+                                              .pop(
+                                              true),
+                                      child: const Text(
+                                          "Eliminar"),
                                     ),
                                   ],
                                 ),
                               );
-                              if (confirm == true) {
-                                await dbHelper.deleteSale(sale['idventa']);
+                              if (confirm ==
+                                  true) {
+                                await dbHelper
+                                    .deleteSale(
+                                    sale['idventa']);
                                 await _loadSales();
                               }
                             },
