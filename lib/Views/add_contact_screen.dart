@@ -15,28 +15,39 @@ class _AddContactScreenState extends State<AddContactScreen> {
   final dbHelper = DatabaseHelper();
 
   Future<void> _addContact() async {
-    if (_formKey.currentState!.validate()) {
-      try {
-        final int result = await dbHelper.addContact(
-          _fullNameController.text.trim(),
-          _contactNumberController.text.trim(),
-        );
-        if (result > 0) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Cliente agregado exitosamente.")),
-          );
-          _fullNameController.clear();
-          _contactNumberController.clear();
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Error al agregar el cliente.")),
-          );
-        }
-      } catch (e) {
+    if (!_formKey.currentState!.validate()) return;
+    final numero = _contactNumberController.text.trim();
+
+    // 1) Consulta duplicados
+    final existentes = await dbHelper.getContactsByNumber(numero);
+    if (existentes.isNotEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Ya existe un cliente con ese número.")),
+      );
+      return;
+    }
+
+    // 2) Si no hay duplicado, inserta
+    try {
+      final result = await dbHelper.addContact(
+        _fullNameController.text.trim(),
+        numero,
+      );
+      if (result > 0) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: ${e.toString()}")),
+          const SnackBar(content: Text("Cliente agregado exitosamente.")),
+        );
+        _fullNameController.clear();
+        _contactNumberController.clear();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Error al agregar el cliente.")),
         );
       }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: ${e.toString()}")),
+      );
     }
   }
 
@@ -53,6 +64,7 @@ class _AddContactScreenState extends State<AddContactScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Nombre Completo: mínimo 4 caracteres
               TextFormField(
                 controller: _fullNameController,
                 decoration: const InputDecoration(
@@ -60,13 +72,17 @@ class _AddContactScreenState extends State<AddContactScreen> {
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) {
-                  if (value == null || value.isEmpty) {
+                  if (value == null || value.trim().isEmpty) {
                     return "Por favor ingresa un nombre completo.";
+                  }
+                  if (value.trim().length < 4) {
+                    return "El nombre debe tener al menos 4 letras.";
                   }
                   return null;
                 },
               ),
               const SizedBox(height: 20),
+              // Número de Cliente: exactamente 8 dígitos
               TextFormField(
                 controller: _contactNumberController,
                 decoration: const InputDecoration(
@@ -75,11 +91,12 @@ class _AddContactScreenState extends State<AddContactScreen> {
                 ),
                 keyboardType: TextInputType.phone,
                 validator: (value) {
-                  if (value == null || value.isEmpty) {
+                  if (value == null || value.trim().isEmpty) {
                     return "Por favor ingresa un número de cliente.";
                   }
-                  if (value.length < 8) {
-                    return "El número debe tener al menos 8 dígitos.";
+                  final trimmed = value.trim();
+                  if (!RegExp(r'^\d{8}$').hasMatch(trimmed)) {
+                    return "El número debe tener exactamente 8 dígitos.";
                   }
                   return null;
                 },
@@ -88,12 +105,12 @@ class _AddContactScreenState extends State<AddContactScreen> {
               ElevatedButton(
                 onPressed: _addContact,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).primaryColor, // Usar el color principal del tema
+                  backgroundColor: Theme.of(context).primaryColor,
                 ),
                 child: Text(
                   "Registrar Cliente",
                   style: TextStyle(
-                    color: Theme.of(context).textTheme.bodyLarge?.color, // Usar el color de texto del tema
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
                   ),
                 ),
               ),

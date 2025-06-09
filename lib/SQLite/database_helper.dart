@@ -168,7 +168,14 @@ CREATE TABLE ventas (
 
 
 
-
+  Future<List<Map<String, dynamic>>> getContactsByNumber(String number) async {
+    final db = await initDB();
+    return await db.query(
+      'contacts',
+      where: 'contactNumber = ?',
+      whereArgs: [number],
+    );
+  }
 
 
 
