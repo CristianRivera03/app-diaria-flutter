@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../SQLite/database_helper.dart';
+import '../Components/footer_nav.dart';
 
 class AddSaleScreen extends StatefulWidget {
   const AddSaleScreen({Key? key}) : super(key: key);
@@ -18,25 +19,7 @@ class _AddSaleScreenState extends State<AddSaleScreen> {
   final List<double> precios =
   List.generate(20, (i) => (i + 1) * 0.25); // 0.25 a 5.00
 
-  void _decrementNumero(FormFieldState<int> state) {
-    if (numeroComprado > 0) {
-      setState(() {
-        numeroComprado--;
-        state.didChange(numeroComprado);
-      });
-    }
-  }
-
-  void _incrementNumero(FormFieldState<int> state) {
-    if (numeroComprado < 100) {
-      setState(() {
-        numeroComprado++;
-        state.didChange(numeroComprado);
-      });
-    }
-  }
-
-  /// Muestra una notificación en la parte superior
+  /// Notificación superior
   void _showTopNotification(String message) {
     final overlay = Overlay.of(context)!;
     final entry = OverlayEntry(
@@ -67,7 +50,6 @@ class _AddSaleScreenState extends State<AddSaleScreen> {
         );
       },
     );
-
     overlay.insert(entry);
     Future.delayed(const Duration(seconds: 2), () => entry.remove());
   }
@@ -99,73 +81,28 @@ class _AddSaleScreenState extends State<AddSaleScreen> {
               ),
               const SizedBox(height: 24),
 
-              // Número comprado (editable + stepper)
-              FormField<int>(
-                initialValue: numeroComprado,
-                validator: (v) => v == null ? 'Selecciona un número' : null,
-                onSaved: (v) => numeroComprado = v!,
-                builder: (state) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Número Comprado',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.remove_circle_outline),
-                            onPressed: () => _decrementNumero(state),
-                          ),
-                          SizedBox(
-                            width: 60,
-                            child: TextFormField(
-                              initialValue:
-                              numeroComprado.toString().padLeft(2, '0'),
-                              textAlign: TextAlign.center,
-                              keyboardType: TextInputType.number,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.digitsOnly,
-                                LengthLimitingTextInputFormatter(3),
-                              ],
-                              decoration: InputDecoration(border: border),
-                              onChanged: (val) {
-                                final n = int.tryParse(val) ?? numeroComprado;
-                                if (n >= 0 && n <= 100) {
-                                  setState(() {
-                                    numeroComprado = n;
-                                    state.didChange(n);
-                                  });
-                                }
-                              },
-                            ),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.add_circle_outline),
-                            onPressed: () => _incrementNumero(state),
-                          ),
-                        ],
-                      ),
-                      if (state.hasError)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 6, left: 12),
-                          child: Text(
-                            state.errorText!,
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.error,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ),
-                    ],
-                  );
+              // Número comprado (campo numérico simple)
+              TextFormField(
+                initialValue: numeroComprado.toString(),
+                decoration: InputDecoration(
+                  labelText: 'Número Comprado (0 - 100)',
+                  border: border,
+                ),
+                keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(3),
+                ],
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'Ingresa un número';
+                  final n = int.tryParse(v);
+                  if (n == null || n < 0 || n > 100) {
+                    return 'El número debe estar entre 0 y 100';
+                  }
+                  return null;
                 },
+                onSaved: (v) =>
+                numeroComprado = int.tryParse(v!.trim()) ?? numeroComprado,
               ),
               const SizedBox(height: 24),
 
@@ -227,6 +164,7 @@ class _AddSaleScreenState extends State<AddSaleScreen> {
           ),
         ),
       ),
+      bottomNavigationBar: const FooterNav(currentIndex: 1),
     );
   }
 }

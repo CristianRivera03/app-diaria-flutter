@@ -5,6 +5,7 @@ import 'package:open_file/open_file.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
+import '../Components/footer_nav.dart';
 import '../SQLite/database_helper.dart';
 import 'edit_contact_screen.dart'; // Asegúrate de que apunte correctamente
 
@@ -206,6 +207,7 @@ class _ViewContactScreenState extends State<ViewContactScreen> {
           ],
         ),
       ),
+      bottomNavigationBar: const FooterNav(currentIndex: 2),
     );
   }
 }
@@ -304,6 +306,8 @@ class _EditContactScreenState extends State<EditContactScreen> {
           ElevatedButton(onPressed: _updateContact, child: const Text("Guardar Cambios")),
         ]),
       ),
+
+
     );
   }
 }

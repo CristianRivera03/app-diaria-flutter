@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../Components/footer_nav.dart';
 import '../SQLite/database_helper.dart';
 
 class AddContactScreen extends StatefulWidget {
@@ -118,6 +119,7 @@ class _AddContactScreenState extends State<AddContactScreen> {
           ),
         ),
       ),
+      bottomNavigationBar: const FooterNav(currentIndex: 3),
     );
   }
 

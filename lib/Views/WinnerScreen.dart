@@ -5,6 +5,8 @@ import 'package:open_file/open_file.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import '../SQLite/database_helper.dart';
+import '../Components/footer_nav.dart';
+
 
 class WinnerScreen extends StatefulWidget {
   const WinnerScreen({Key? key}) : super(key: key);
@@ -191,6 +193,7 @@ class _WinnerScreenState extends State<WinnerScreen> {
           ],
         ),
       ),
+      bottomNavigationBar: const FooterNav(currentIndex: 4),
     );
   }
 }

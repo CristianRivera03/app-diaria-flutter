@@ -10,6 +10,7 @@ import '../JSON/users.dart';
 import 'add_contact_screen.dart';
 import '../Services/theme_manager.dart';
 import '../SQLite/database_helper.dart';
+import '../Components/footer_nav.dart';
 
 class MainView extends StatefulWidget {
   final Users userProfile;
@@ -39,17 +40,20 @@ class _MainViewState extends State<MainView> {
 
   @override
   Widget build(BuildContext context) {
+    // Accedemos a tu ThemeManager
     final theme = Provider.of<ThemeManager>(context);
 
     return Scaffold(
-      backgroundColor: theme.scaffoldBackground,
+      // Usamos backgroundColor de tu ThemeManager
+      backgroundColor: theme.backgroundColor,
+
+      // ─── HEADER ──────────────────────────────────────────
       body: Column(
         children: [
-          // ─── HEADER ──────────────────────────────────────────
           Container(
             width: double.infinity,
             decoration: BoxDecoration(
-              color: theme.primaryColor,
+              color: theme.primaryColor, // primaryColor
               borderRadius: const BorderRadius.vertical(
                 bottom: Radius.circular(32),
               ),
@@ -62,20 +66,10 @@ class _MainViewState extends State<MainView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Toggle theme + profile icon
+                    // Perfil
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        IconButton(
-                          icon: Icon(
-                            theme.isDarkMode
-                                ? Icons.wb_sunny
-                                : Icons.nights_stay,
-                            color: theme.textColor,
-                          ),
-                          onPressed: theme.toggleTheme,
-                        ),
-                        const SizedBox(width: 8),
                         IconButton(
                           icon: Icon(Icons.account_circle,
                               size: 32, color: theme.textColor),
@@ -143,10 +137,13 @@ class _MainViewState extends State<MainView> {
                     label: 'Agregar venta',
                     color: theme.primaryColor,
                     textColor: theme.textColor,
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const AddSaleScreen()),
-                    ),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const AddSaleScreen()),
+                      ).then((_) => _loadTotalSales());
+                    },
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -156,10 +153,13 @@ class _MainViewState extends State<MainView> {
                     label: 'Ver ganadores',
                     color: theme.primaryColor,
                     textColor: theme.textColor,
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const WinnerScreen()),
-                    ),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const WinnerScreen()),
+                      ).then((_) => _loadTotalSales());
+                    },
                   ),
                 ),
               ],
@@ -178,10 +178,13 @@ class _MainViewState extends State<MainView> {
                   label: 'Visualizar ventas',
                   color: theme.primaryColor,
                   textColor: theme.textColor,
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const ViewSalesScreen()),
-                  ),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const ViewSalesScreen()),
+                    ).then((_) => _loadTotalSales());
+                  },
                 ),
                 const SizedBox(height: 16),
                 _FullWidthButton(
@@ -189,11 +192,13 @@ class _MainViewState extends State<MainView> {
                   label: 'Agregar cliente',
                   color: theme.primaryColor,
                   textColor: theme.textColor,
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => const AddContactScreen()),
-                  ),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const AddContactScreen()),
+                    ).then((_) => _loadTotalSales());
+                  },
                 ),
                 const SizedBox(height: 16),
                 _FullWidthButton(
@@ -201,17 +206,22 @@ class _MainViewState extends State<MainView> {
                   label: 'Visualizar clientes',
                   color: theme.primaryColor,
                   textColor: theme.textColor,
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => const ViewContactScreen()),
-                  ),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const ViewContactScreen()),
+                    ).then((_) => _loadTotalSales());
+                  },
                 ),
               ],
             ),
           ),
         ],
       ),
+
+      // ─── FOOTER NAVEGACIÓN ───────────────────────────────
+      bottomNavigationBar: const FooterNav(currentIndex: 0),
     );
   }
 }
@@ -240,8 +250,8 @@ class _SquareButton extends StatelessWidget {
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: color,
-          shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16)),
         ),
         onPressed: onTap,
         child: Column(
